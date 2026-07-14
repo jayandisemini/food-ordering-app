@@ -1,53 +1,63 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
-import 'core/localization/language_provider.dart';
-import 'presentation/navigation/auth_wrapper.dart';
-import 'state/cart_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Supabase.initialize(
     url: 'https://jkuqaajnlftacqqanhep.supabase.co',
-    publishableKey: 'sb_publishable_4V8vSW6_K8okyM-VWrDXww_kxI9JzjV',
+    anonKey: 'sb_publishable_4V8vSW6_K8okyM-VWrDXww_kxI9JzjV',
   );
-
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => LanguageProvider()),
-        ChangeNotifierProvider(create: (_) => CartProvider()),
-      ],
-      child: const QuickBiteApp(),
-    ),
-  );
+  runApp(const MyApp());
 }
 
-class QuickBiteApp extends StatelessWidget {
-  const QuickBiteApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    const seed = Color(0xFFFF6B2C);
-    final base = ThemeData(
-      brightness: Brightness.dark,
-      useMaterial3: true,
-      scaffoldBackgroundColor: const Color(0xFF121212),
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: seed,
-        brightness: Brightness.dark,
-        surface: const Color(0xFF1B1B1B),
-      ),
+    return const MaterialApp(
+      title: 'Todos',
+      home: HomePage(),
     );
-    return MaterialApp(
-      title: 'QuickBite',
-      debugShowCheckedModeBanner: false,
-      theme: base.copyWith(
-        textTheme: GoogleFonts.interTextTheme(base.textTheme),
+  }
+}
+
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  final _future = Supabase.instance.client.from('todos').select();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Todos')),
+      body: FutureBuilder(
+        future: _future,
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
+          
+          final todos = snapshot.data!;
+          return ListView.builder(
+            itemCount: todos.length,
+            itemBuilder: ((context, index) {
+              final todo = todos[index];
+              return ListTile(
+                title: Text(todo['name'].toString()),
+              );
+            }),
+          );
+        },
       ),
-      home: const AuthWrapper(),
     );
   }
 }
