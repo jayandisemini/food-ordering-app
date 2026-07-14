@@ -48,9 +48,9 @@ class ProfileScreen extends StatelessWidget {
           Center(child: Text(lang.t('nav.profile'),
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900))),
           const SizedBox(height: 24),
-          Center(child: CircleAvatar(
-            radius: 44, backgroundColor: const Color(0xFFFF6B2C),
-            child: const Text('Q', style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900)),
+          const Center(child: CircleAvatar(
+            radius: 44, backgroundColor: Color(0xFFFF6B2C),
+            child: Text('Q', style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900)),
           )),
           const SizedBox(height: 12),
           const Center(child: Text('Guest User', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18))),

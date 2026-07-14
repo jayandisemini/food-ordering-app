@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/localization/language_provider.dart';
-import '../screens/cart_screen.dart';
 import '../screens/favorites_screen.dart';
 import '../screens/home_screen.dart';
 import '../screens/orders_screen.dart';
@@ -36,7 +35,7 @@ class _RootShellState extends State<RootShell> {
         selectedIndex: _index,
         onDestinationSelected: (i) => setState(() => _index = i),
         backgroundColor: const Color(0xFF1B1B1B),
-        indicatorColor: const Color(0xFFFF6B2C).withOpacity(0.18),
+        indicatorColor: const Color(0xFFFF6B2C).withValues(alpha: 0.18),
         destinations: [
           NavigationDestination(icon: const Icon(Icons.home_outlined), selectedIcon: const Icon(Icons.home), label: lang.t('nav.home')),
           NavigationDestination(icon: const Icon(Icons.search), label: lang.t('nav.search')),

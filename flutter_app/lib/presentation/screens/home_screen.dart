@@ -29,14 +29,14 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(children: [
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Row(children: const [
+              const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Row(children: [
                   Icon(Icons.location_on, size: 14, color: Color(0xFFFF6B2C)),
                   SizedBox(width: 4),
                   Text('Deliver to', style: TextStyle(fontSize: 11, color: Colors.white54)),
                 ]),
-                const SizedBox(height: 2),
-                const Text('Colombo 03, Sri Lanka', style: TextStyle(fontWeight: FontWeight.w700)),
+                SizedBox(height: 2),
+                Text('Colombo 03, Sri Lanka', style: TextStyle(fontWeight: FontWeight.w700)),
               ]),
               const Spacer(),
               Stack(children: [
@@ -55,9 +55,9 @@ class _HomeScreenState extends State<HomeScreen> {
               _circleIcon(Icons.notifications_none),
             ]),
             const SizedBox(height: 22),
-            RichText(text: TextSpan(
-              style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: Colors.white, height: 1.15),
-              children: const [
+            RichText(text: const TextSpan(
+              style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: Colors.white, height: 1.15),
+              children: [
                 TextSpan(text: "Hi there 👋\nWhat's making you "),
                 TextSpan(text: 'hungry?', style: TextStyle(color: Color(0xFFFF6B2C))),
               ],
@@ -141,10 +141,10 @@ class _HomeScreenState extends State<HomeScreen> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(22),
           gradient: const LinearGradient(colors: [Color(0xFFFF6B2C), Color(0xFFFF9152)]),
-          boxShadow: [BoxShadow(color: const Color(0xFFFF6B2C).withOpacity(0.35), blurRadius: 20, offset: const Offset(0, 10))],
+          boxShadow: [BoxShadow(color: const Color(0xFFFF6B2C).withValues(alpha: 0.35), blurRadius: 20, offset: const Offset(0, 10))],
         ),
         padding: const EdgeInsets.all(18),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: const [
+        child: const Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: [
           Text('50% OFF first order',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white)),
           SizedBox(height: 4),

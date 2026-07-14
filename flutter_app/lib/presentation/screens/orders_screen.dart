@@ -70,7 +70,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
             child: Row(children: [
               Container(
                 height: 48, width: 48,
-                decoration: BoxDecoration(color: const Color(0xFFFF6B2C).withOpacity(0.15), borderRadius: BorderRadius.circular(14)),
+                decoration: BoxDecoration(color: const Color(0xFFFF6B2C).withValues(alpha: 0.15), borderRadius: BorderRadius.circular(14)),
                 child: const Icon(Icons.receipt_long, color: Color(0xFFFF6B2C)),
               ),
               const SizedBox(width: 12),
@@ -123,7 +123,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
         Container(
           height: 48, width: 48,
           decoration: BoxDecoration(
-            color: (cancelled ? Colors.red : const Color(0xFFFF6B2C)).withOpacity(0.15),
+            color: (cancelled ? Colors.red : const Color(0xFFFF6B2C)).withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(14),
           ),
           child: Icon(cancelled ? Icons.cancel : Icons.check_circle,
@@ -139,7 +139,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: (cancelled ? Colors.red : const Color(0xFFFF6B2C)).withOpacity(0.15),
+                  color: (cancelled ? Colors.red : const Color(0xFFFF6B2C)).withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(o.status,

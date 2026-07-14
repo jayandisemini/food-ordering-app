@@ -17,8 +17,8 @@ class FoodCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF1B1B1B),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.04)),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.4), blurRadius: 14, offset: const Offset(0, 6))],
+        border: Border.all(color: Colors.white.withValues(alpha: 0.04)),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.4), blurRadius: 14, offset: const Offset(0, 6))],
       ),
       padding: const EdgeInsets.all(12),
       child: Column(
@@ -38,7 +38,7 @@ class FoodCard extends StatelessWidget {
               style: const TextStyle(fontWeight: FontWeight.w800, height: 1.2)),
           const SizedBox(height: 2),
           Text(food.restaurant, maxLines: 1, overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 11, color: Colors.white.withOpacity(0.55))),
+              style: TextStyle(fontSize: 11, color: Colors.white.withValues(alpha: 0.55))),
           const SizedBox(height: 6),
           Row(children: [
             const Icon(Icons.star, size: 12, color: Color(0xFFFF6B2C)),
