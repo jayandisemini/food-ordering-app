@@ -11,46 +11,53 @@ class AuthWrapper extends StatefulWidget {
 }
 
 class _AuthWrapperState extends State<AuthWrapper> {
-  bool _isLoading = true;
+  late final Future<Session?> _initialSession;
+  bool _guestMode = false;
 
   @override
   void initState() {
     super.initState();
-    _checkSession();
-  }
-
-  Future<void> _checkSession() async {
-    setState(() {
-      _isLoading = false;
-    });
+    _initialSession = Future<Session?>.value(
+      Supabase.instance.client.auth.currentSession,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Scaffold(
-        backgroundColor: Color(0xFF121212),
-        body: Center(child: CircularProgressIndicator(color: Color(0xFFFF6B2C))),
-      );
-    }
-
-    return StreamBuilder<AuthState>(
-      stream: Supabase.instance.client.auth.onAuthStateChange,
+    return FutureBuilder<Session?>(
+      future: _initialSession,
       builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          final session = snapshot.data!.session;
-          if (session != null) {
-            return const RootShell();
-          }
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const _LoadingScreen();
         }
-        
-        final currentUser = Supabase.instance.client.auth.currentUser;
-        if (currentUser != null) {
-           return const RootShell();
-        }
-
-        return const LoginScreen();
+        return StreamBuilder<AuthState>(
+          stream: Supabase.instance.client.auth.onAuthStateChange,
+          builder: (context, authSnapshot) {
+            final streamedSession = authSnapshot.data?.session;
+            final session = streamedSession ??
+                snapshot.data ??
+                Supabase.instance.client.auth.currentSession;
+            if (_guestMode || session != null) {
+              return const RootShell();
+            }
+            return LoginScreen(
+              onContinueAsGuest: () => setState(() => _guestMode = true),
+            );
+          },
+        );
       },
+    );
+  }
+}
+
+class _LoadingScreen extends StatelessWidget {
+  const _LoadingScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      backgroundColor: Color(0xFF121212),
+      body: Center(child: CircularProgressIndicator(color: Color(0xFFFF6B2C))),
     );
   }
 }
