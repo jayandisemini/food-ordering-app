@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/localization/language_provider.dart';
 import 'presentation/navigation/root_shell.dart';
 import 'state/cart_provider.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Supabase.initialize(
+    url: 'https://jkuqaajnlftacqqanhep.supabase.co',
+    publishableKey: 'sb_publishable_4V8vSW6_K8okyM-VWrDXww_kxI9JzjV',
+  );
+
   runApp(
     MultiProvider(
       providers: [
