@@ -39,11 +39,14 @@ class _HomePageState extends State<HomePage> {
       body: FutureBuilder(
         future: _future,
         builder: (context, snapshot) {
-          if (!snapshot.hasData) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
+            return Center(child: Text('Error: ${snapshot.error}', style: const TextStyle(color: Colors.red)));
+          }
+          if (!snapshot.hasData) {
+            return const Center(child: Text('No data found'));
           }
           
           final todos = snapshot.data!;
