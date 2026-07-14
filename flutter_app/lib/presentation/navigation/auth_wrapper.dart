@@ -20,7 +20,6 @@ class _AuthWrapperState extends State<AuthWrapper> {
   }
 
   Future<void> _checkSession() async {
-    final session = Supabase.instance.client.auth.currentSession;
     setState(() {
       _isLoading = false;
     });

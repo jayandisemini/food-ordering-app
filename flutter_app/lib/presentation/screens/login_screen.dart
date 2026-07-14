@@ -15,13 +15,13 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _signInWithGoogle() async {
     setState(() => _isLoading = true);
     try {
-      /// TODO: Replace with your actual Web Client ID from Google Cloud Console
+      /// NOTE: Replace with your actual Web Client ID from Google Cloud Console
       const webClientId = 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com';
 
-      final GoogleSignIn googleSignIn = GoogleSignIn(
+      await GoogleSignIn.instance.initialize(
         serverClientId: webClientId,
       );
-      final googleUser = await googleSignIn.signIn();
+      final googleUser = await GoogleSignIn.instance.authenticate();
       if (googleUser == null) {
         setState(() => _isLoading = false);
         return; // User cancelled
