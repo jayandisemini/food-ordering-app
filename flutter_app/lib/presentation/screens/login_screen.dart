@@ -22,17 +22,17 @@ class _LoginScreenState extends State<LoginScreen> {
         serverClientId: webClientId,
       );
       final googleUser = await GoogleSignIn.instance.authenticate();
-      if (googleUser == null) {
-        setState(() => _isLoading = false);
-        return; // User cancelled
-      }
-      final googleAuth = await googleUser.authentication;
-      final accessToken = googleAuth.accessToken;
-      final idToken = googleAuth.idToken;
+      final idToken = googleUser.authentication.idToken;
 
-      if (accessToken == null || idToken == null) {
-        throw 'No Access Token or ID Token found.';
+      if (idToken == null) {
+        throw 'No ID Token found.';
       }
+
+      // Request an access token via the authorization client
+      final authorization = await GoogleSignIn.instance
+          .authorizationClient
+          .authorizationForScopes(<String>['email']);
+      final accessToken = authorization?.accessToken;
 
       await Supabase.instance.client.auth.signInWithIdToken(
         provider: OAuthProvider.google,
