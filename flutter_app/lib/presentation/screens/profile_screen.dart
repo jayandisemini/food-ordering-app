@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/localization/language_provider.dart';
 import 'cart_screen.dart';
 
@@ -48,12 +49,28 @@ class ProfileScreen extends StatelessWidget {
           Center(child: Text(lang.t('nav.profile'),
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900))),
           const SizedBox(height: 24),
-          const Center(child: CircleAvatar(
-            radius: 44, backgroundColor: Color(0xFFFF6B2C),
-            child: Text('Q', style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900)),
+          Center(child: Builder(
+            builder: (context) {
+              final user = Supabase.instance.client.auth.currentUser;
+              final name = user?.userMetadata?['full_name'] as String? ?? 'Guest User';
+              final avatarUrl = user?.userMetadata?['avatar_url'] as String?;
+              
+              return Column(
+                children: [
+                  CircleAvatar(
+                    radius: 44,
+                    backgroundColor: const Color(0xFFFF6B2C),
+                    backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl) : null,
+                    child: avatarUrl == null 
+                        ? Text(name.isNotEmpty ? name[0].toUpperCase() : 'Q', style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w900))
+                        : null,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(name, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18)),
+                ],
+              );
+            }
           )),
-          const SizedBox(height: 12),
-          const Center(child: Text('Guest User', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18))),
           const SizedBox(height: 28),
           _tile(Icons.shopping_bag_outlined, lang.t('cart.title'),
               () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CartScreen()))),
@@ -62,7 +79,9 @@ class ProfileScreen extends StatelessWidget {
           _tile(Icons.help_outline, 'Help Center', () {}),
           _tile(Icons.lock_outline, 'Privacy & Security', () {}),
           const SizedBox(height: 14),
-          _tile(Icons.logout, 'Log out', () {}, danger: true),
+          _tile(Icons.logout, 'Log out', () async {
+            await Supabase.instance.client.auth.signOut();
+          }, danger: true),
         ],
       ),
     );

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/localization/language_provider.dart';
+import 'presentation/navigation/auth_wrapper.dart';
 import 'presentation/navigation/root_shell.dart';
 import 'state/cart_provider.dart';
 
@@ -47,7 +48,7 @@ class QuickBiteApp extends StatelessWidget {
       theme: base.copyWith(
         textTheme: GoogleFonts.interTextTheme(base.textTheme),
       ),
-      home: const RootShell(),
+      home: const AuthWrapper(),
     );
   }
 }
