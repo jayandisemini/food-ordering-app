@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      title: 'Todos',
+      title: 'Orders',
       home: HomePage(),
     );
   }
@@ -30,12 +30,12 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final _future = Supabase.instance.client.from('todos').select();
+  final _future = Supabase.instance.client.from('orders').select();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Todos')),
+      appBar: AppBar(title: const Text('Orders')),
       body: FutureBuilder(
         future: _future,
         builder: (context, snapshot) {
@@ -49,13 +49,18 @@ class _HomePageState extends State<HomePage> {
             return const Center(child: Text('No data found'));
           }
           
-          final todos = snapshot.data!;
+          final orders = snapshot.data!;
+          if (orders.isEmpty) {
+            return const Center(child: Text('No orders found'));
+          }
+
           return ListView.builder(
-            itemCount: todos.length,
+            itemCount: orders.length,
             itemBuilder: ((context, index) {
-              final todo = todos[index];
+              final order = orders[index];
               return ListTile(
-                title: Text(todo['name'].toString()),
+                title: Text(order['food_name']?.toString() ?? 'Unknown item'),
+                subtitle: Text('Status: ${order['status'] ?? 'Pending'}'),
               );
             }),
           );
