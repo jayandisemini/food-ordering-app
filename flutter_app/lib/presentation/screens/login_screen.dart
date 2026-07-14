@@ -16,7 +16,7 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
     try {
       /// NOTE: Replace with your actual Web Client ID from Google Cloud Console
-      const webClientId = 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com';
+      const webClientId = '711607449225-e64ime6lecdqnhquahv7frc0ojs4am1s.apps.googleusercontent.com';
 
       await GoogleSignIn.instance.initialize(
         serverClientId: webClientId,
