@@ -87,9 +87,15 @@ class AdminDashboardScreen extends StatelessWidget {
         .select()
         .order('created_at', ascending: false);
     return {
-      'orders': List<Map<String, dynamic>>.from(orders),
-      'foods': List<Map<String, dynamic>>.from(foods),
-      'notifications': List<Map<String, dynamic>>.from(notifications),
+      'orders': (orders as List)
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .toList(),
+      'foods': (foods as List)
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .toList(),
+      'notifications': (notifications as List)
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .toList(),
     };
   }
 

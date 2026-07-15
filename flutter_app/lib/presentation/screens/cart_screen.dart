@@ -34,18 +34,19 @@ class _CartScreenState extends State<CartScreen> {
     try {
       final cart = context.read<CartProvider>();
       final user = Supabase.instance.client.auth.currentUser!;
-      final itemRows = cart.items.map((ci) {
+      final itemRows = <Map<String, dynamic>>[];
+      for (final ci in cart.items) {
         final matches = foods.where((x) => x.id == ci.id);
-        if (matches.isEmpty) return null;
+        if (matches.isEmpty) continue;
         final f = matches.first;
-        return {
+        itemRows.add({
           'food_id': f.id,
           'name': f.name,
           'restaurant_name': f.restaurant,
           'quantity': ci.qty,
           'price': f.price,
-        };
-      }).whereType<Map<String, Object>>().toList();
+        });
+      }
       if (itemRows.isEmpty) {
         throw StateError('No available food items to order.');
       }
@@ -58,8 +59,7 @@ class _CartScreenState extends State<CartScreen> {
             'delivery_fee': cart.deliveryFee,
             'total': cart.totalFor(foods),
             'total_price': cart.totalFor(foods),
-            'restaurant_name':
-                itemRows.isEmpty ? null : itemRows.first['restaurant_name'],
+            'restaurant_name': itemRows.first['restaurant_name'],
             'eta': '25 min',
             'status': 'placed',
             'address': 'Colombo 03, Sri Lanka',

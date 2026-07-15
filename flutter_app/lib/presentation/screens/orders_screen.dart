@@ -60,7 +60,9 @@ class OrdersScreen extends StatelessWidget {
         .select()
         .eq('user_id', userId)
         .order('created_at', ascending: false);
-    return List<Map<String, dynamic>>.from(rows);
+    return (rows as List)
+        .map((e) => Map<String, dynamic>.from(e as Map))
+        .toList();
   }
 
   Widget _orderCard(BuildContext context, Map<String, dynamic> o, String c,
@@ -84,7 +86,7 @@ class OrdersScreen extends StatelessWidget {
               height: 48,
               width: 48,
               decoration: BoxDecoration(
-                color: const Color(0xFFFF6B2C).withValues(alpha: 0.15),
+                color: const Color(0xFFFF6B2C).withOpacity(0.15),
                 borderRadius: BorderRadius.circular(14),
               ),
               child: const Icon(Icons.receipt_long, color: Color(0xFFFF6B2C)),

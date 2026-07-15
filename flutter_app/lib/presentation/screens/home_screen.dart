@@ -57,7 +57,7 @@ class _HomeScreenState extends State<HomeScreen> {
             RichText(text: const TextSpan(
               style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: Colors.white, height: 1.15),
               children: [
-                TextSpan(text: "Hi there 👋\nWhat's making you "),
+                TextSpan(text: "Hi there\nWhat's making you "),
                 TextSpan(text: 'hungry?', style: TextStyle(color: Color(0xFFFF6B2C))),
               ],
             )),
@@ -86,7 +86,7 @@ class _HomeScreenState extends State<HomeScreen> {
               builder: (context, snapshot) {
                 final categories = [
                   const FoodCategory('all', 'All', 'food'),
-                  ...snapshot.data ?? <FoodCategory>[],
+                  ...(snapshot.data ?? <FoodCategory>[]),
                 ];
                 return SizedBox(
                   height: 44,
@@ -164,7 +164,7 @@ class _HomeScreenState extends State<HomeScreen> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(22),
           gradient: const LinearGradient(colors: [Color(0xFFFF6B2C), Color(0xFFFF9152)]),
-          boxShadow: [BoxShadow(color: const Color(0xFFFF6B2C).withValues(alpha: 0.35), blurRadius: 20, offset: const Offset(0, 10))],
+          boxShadow: [BoxShadow(color: const Color(0xFFFF6B2C).withOpacity(0.35), blurRadius: 20, offset: const Offset(0, 10))],
         ),
         padding: const EdgeInsets.all(18),
         child: const Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: [

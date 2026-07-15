@@ -59,14 +59,16 @@ class FoodRepository {
   static Future<List<FoodCategory>> categories() async {
     final rows = await _db.from('categories').select().order('name');
     return (rows as List)
-        .map((e) => FoodCategory.fromRow(e))
+        .map((e) => FoodCategory.fromRow(Map<String, dynamic>.from(e as Map)))
         .where((c) => c.id != 'all')
         .toList();
   }
 
   static Future<List<Food>> foods({String? query, String? category}) async {
     final rows = await _db.from('food_items').select().order('name');
-    var items = (rows as List).map((e) => Food.fromRow(e)).toList();
+    var items = (rows as List)
+        .map((e) => Food.fromRow(Map<String, dynamic>.from(e as Map)))
+        .toList();
     if (category != null && category != 'all') {
       items = items.where((f) => f.category == category).toList();
     }
@@ -83,7 +85,7 @@ class FoodRepository {
 
   static Future<Food> food(String id) async {
     final row = await _db.from('food_items').select().eq('id', id).single();
-    return Food.fromRow(row);
+    return Food.fromRow(Map<String, dynamic>.from(row));
   }
 }
 

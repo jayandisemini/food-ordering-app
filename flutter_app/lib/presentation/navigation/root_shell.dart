@@ -34,14 +34,14 @@ class _RootShellState extends State<RootShell> {
     final screens = appSession.isGuest
         ? const [SearchScreen(), ProfileScreen()]
         : _screens;
-    final index = _index.clamp(0, screens.length - 1);
+    final index = _index >= screens.length ? screens.length - 1 : _index;
     return Scaffold(
       body: IndexedStack(index: index, children: screens),
       bottomNavigationBar: NavigationBar(
         selectedIndex: index,
         onDestinationSelected: (i) => setState(() => _index = i),
         backgroundColor: const Color(0xFF1B1B1B),
-        indicatorColor: const Color(0xFFFF6B2C).withValues(alpha: 0.18),
+        indicatorColor: const Color(0xFFFF6B2C).withOpacity(0.18),
         destinations: appSession.isGuest
             ? [
                 NavigationDestination(

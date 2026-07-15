@@ -66,6 +66,7 @@ class _LoginScreenState extends State<LoginScreen> {
           email: email,
           password: password,
         );
+        if (!mounted) return;
         context.read<AppSession>().enterAdmin();
         return;
       }
