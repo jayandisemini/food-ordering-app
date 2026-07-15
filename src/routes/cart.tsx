@@ -4,6 +4,7 @@ import { ArrowLeft, Minus, Plus, Trash2, Tag, ChevronRight, Loader2, CheckCircle
 import { toast } from "sonner";
 import { cartStore, useCart } from "@/lib/cart-store";
 import { findFood, formatLkr } from "@/lib/food-data";
+import { useAuth } from "@/lib/use-auth";
 import { BottomNav } from "@/components/bottom-nav";
 import { useI18n } from "@/lib/i18n";
 
@@ -14,6 +15,7 @@ export const Route = createFileRoute("/cart")({
 
 function CartPage() {
   const { t } = useI18n();
+  const { user } = useAuth();
   const cart = useCart();
   const navigate = useNavigate();
   const [placing, setPlacing] = useState(false);
@@ -163,7 +165,13 @@ function CartPage() {
       {items.length > 0 && (
         <div className="fixed inset-x-0 bottom-20 z-30 mx-auto max-w-[440px] px-5">
           <button
-            onClick={placeOrder}
+            onClick={() => {
+              if (!user) {
+                navigate({ to: "/auth" });
+                return;
+              }
+              placeOrder();
+            }}
             disabled={placing}
             className="press flex w-full items-center justify-center gap-3 rounded-2xl bg-primary px-6 py-4 text-primary-foreground shadow-glow disabled:opacity-80"
           >

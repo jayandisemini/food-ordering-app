@@ -3,6 +3,7 @@ import { useState } from "react";
 import { ArrowLeft, Heart, Minus, Plus, Star, Clock, Flame } from "lucide-react";
 import { findFood, formatLkr } from "@/lib/food-data";
 import { cartStore, useFavorites } from "@/lib/cart-store";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/food/$id")({
   head: ({ params }) => {
@@ -25,8 +26,11 @@ function FoodDetail() {
   const [qty, setQty] = useState(1);
   const favs = useFavorites();
   const navigate = useNavigate();
+  const { t } = useI18n();
   if (!food) return null;
   const isFav = favs.has(food.id);
+  const displayName = food.nameKey ? t(food.nameKey) : food.name;
+  const displayDesc = food.descKey ? t(food.descKey) : food.description;
 
   return (
     <div className="phone-frame relative min-h-dvh bg-background pb-32">
@@ -65,7 +69,7 @@ function FoodDetail() {
             </span>
           ))}
         </div>
-        <h1 className="mt-3 font-display text-3xl font-black leading-tight">{food.name}</h1>
+        <h1 className="mt-3 font-display text-3xl font-black leading-tight">{displayName}</h1>
         <p className="mt-1 text-sm font-medium text-muted-foreground">{food.restaurant}</p>
 
         <div className="mt-4 flex items-center gap-4 text-sm">
@@ -82,7 +86,7 @@ function FoodDetail() {
         </div>
 
         <h3 className="mt-7 text-xs font-bold uppercase tracking-wider text-muted-foreground">Description</h3>
-        <p className="mt-2 text-[15px] leading-relaxed text-foreground/80">{food.description}</p>
+        <p className="mt-2 text-[15px] leading-relaxed text-foreground/80">{displayDesc}</p>
 
         <h3 className="mt-7 text-xs font-bold uppercase tracking-wider text-muted-foreground">Quantity</h3>
         <div className="mt-3 flex items-center gap-4">

@@ -223,7 +223,14 @@ function ProfilePage() {
                     onClick: () => setLogoutOpen(true),
                   } as Item,
                 ]
-              : []),
+              : [
+                  {
+                    icon: LogIn,
+                    label: t("register") ?? "Register",
+                    sub: t("createAccount") ?? "Create a new account",
+                    onClick: () => navigate({ to: "/auth" }),
+                  } as Item,
+                ]),
           ]}
         />
       </div>

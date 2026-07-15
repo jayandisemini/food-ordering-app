@@ -18,61 +18,70 @@ type Notif = {
   unread?: boolean;
 };
 
-const INITIAL_TODAY: Notif[] = [
-  {
-    id: "n1",
-    emoji: "🚀",
-    title: "Order Dispatched",
-    body: "Your burger is on the way!",
-    time: "10 mins ago",
-    unread: true,
-  },
-  {
-    id: "n2",
-    emoji: "⭐",
-    title: "Rate your last order",
-    body: "How was Spicy Chicken Kottu from Kottu King?",
-    time: "2 hrs ago",
-  },
-  {
-    id: "n3",
-    emoji: "🔥",
-    title: "Trending near you",
-    body: "Colombo Burger Co. just dropped a new smash burger.",
-    time: "5 hrs ago",
-  },
-];
-
-const INITIAL_YESTERDAY: Notif[] = [
-  {
-    id: "n4",
-    emoji: "🎉",
-    title: "Promo",
-    body: "Use code BINGE50 to get 50% off your next meal.",
-    time: "Yesterday",
-  },
-  {
-    id: "n5",
-    emoji: "📦",
-    title: "Order Delivered",
-    body: "Enjoy your meal from Pizza Palace!",
-    time: "Yesterday",
-  },
-];
+import { useAuth } from "@/lib/use-auth";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function NotificationsPage() {
   const { t } = useI18n();
-  const [today, setToday] = useState(INITIAL_TODAY);
-  const [yesterday, setYesterday] = useState(INITIAL_YESTERDAY);
+  const { user } = useAuth();
+  const [notifications, setNotifications] = useState<Notif[]>([]);
   const [justMarked, setJustMarked] = useState(false);
 
-  const hasUnread =
-    today.some((n) => n.unread) || yesterday.some((n) => n.unread);
+  useEffect(() => {
+    if (!user) return;
+    
+    // Fetch initial notifications
+    const fetchNotifications = async () => {
+      const { data } = await supabase
+        .from("notifications")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+      
+      if (data) {
+        setNotifications(data.map(n => ({
+          id: n.id,
+          emoji: n.emoji,
+          title: n.title,
+          body: n.body,
+          time: new Date(n.created_at).toLocaleTimeString(),
+          unread: n.unread
+        })));
+      }
+    };
+    
+    fetchNotifications();
 
-  const markAll = () => {
-    if (!hasUnread) return;
-    setToday((xs) => xs.map((n) => ({ ...n, unread: false })));
-    setYesterday((xs) => xs.map((n) => ({ ...n, unread: false })));
+    // Subscribe to realtime changes
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
+        () => fetchNotifications()
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
+  const today = notifications;
+  const yesterday: Notif[] = []; // Real-time groups can be done via date math later
+
+  const hasUnread = notifications.some((n) => n.unread);
+
+  const markAll = async () => {
+    if (!hasUnread || !user) return;
+    
+    await supabase
+      .from("notifications")
+      .update({ unread: false })
+      .eq("user_id", user.id)
+      .eq("unread", true);
+      
+    setNotifications((xs) => xs.map((n) => ({ ...n, unread: false })));
     setJustMarked(true);
   };
 

@@ -57,7 +57,11 @@ export function FoodCard({ food, index = 0 }: { food: Food; index?: number }) {
           </div>
           <button
             type="button"
-            onClick={() => cartStore.add(food.id)}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              cartStore.add(food.id);
+            }}
             className="press grid h-9 w-9 shrink-0 place-items-center rounded-2xl bg-foreground text-background shadow-soft transition-transform hover:scale-105"
             aria-label="Add to cart"
           >
