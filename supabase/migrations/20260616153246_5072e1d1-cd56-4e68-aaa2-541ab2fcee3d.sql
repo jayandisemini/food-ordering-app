@@ -1,5 +1,7 @@
 
-CREATE TABLE public.profiles (
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID NOT NULL PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   display_name TEXT,
   email TEXT,
@@ -11,6 +13,11 @@ CREATE TABLE public.profiles (
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.profiles TO authenticated;
 GRANT ALL ON public.profiles TO service_role;
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users view own profile" ON public.profiles;
+DROP POLICY IF EXISTS "Users update own profile" ON public.profiles;
+DROP POLICY IF EXISTS "Users insert own profile" ON public.profiles;
+
 CREATE POLICY "Users view own profile" ON public.profiles FOR SELECT TO authenticated USING (auth.uid() = id);
 CREATE POLICY "Users update own profile" ON public.profiles FOR UPDATE TO authenticated USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
 CREATE POLICY "Users insert own profile" ON public.profiles FOR INSERT TO authenticated WITH CHECK (auth.uid() = id);
@@ -29,10 +36,12 @@ BEGIN
   RETURN NEW;
 END;
 $$;
+
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created AFTER INSERT ON auth.users
 FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
-CREATE TABLE public.orders (
+CREATE TABLE IF NOT EXISTS public.orders (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   items JSONB NOT NULL,
@@ -49,10 +58,14 @@ CREATE TABLE public.orders (
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.orders TO authenticated;
 GRANT ALL ON public.orders TO service_role;
 ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users view own orders" ON public.orders;
+DROP POLICY IF EXISTS "Users create own orders" ON public.orders;
+
 CREATE POLICY "Users view own orders" ON public.orders FOR SELECT TO authenticated USING (auth.uid() = user_id);
 CREATE POLICY "Users create own orders" ON public.orders FOR INSERT TO authenticated WITH CHECK (auth.uid() = user_id);
 
-CREATE TABLE public.favorites (
+CREATE TABLE IF NOT EXISTS public.favorites (
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   food_id TEXT NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -61,4 +74,7 @@ CREATE TABLE public.favorites (
 GRANT SELECT, INSERT, DELETE ON public.favorites TO authenticated;
 GRANT ALL ON public.favorites TO service_role;
 ALTER TABLE public.favorites ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users manage own favorites" ON public.favorites;
+
 CREATE POLICY "Users manage own favorites" ON public.favorites FOR ALL TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
