@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../core/localization/language_provider.dart';
 import '../../data/food_data.dart';
 import '../../state/cart_provider.dart';
+import '../screens/food_detail_screen.dart';
 
 class FoodCard extends StatelessWidget {
   final Food food;
@@ -13,15 +14,22 @@ class FoodCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final lang = context.read<LanguageProvider>();
     final cart = context.read<CartProvider>();
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF1B1B1B),
+    return Material(
+      color: const Color(0xFF1B1B1B),
+      borderRadius: BorderRadius.circular(20),
+      child: InkWell(
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.04)),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.4), blurRadius: 14, offset: const Offset(0, 6))],
-      ),
-      padding: const EdgeInsets.all(12),
-      child: Column(
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => FoodDetailScreen(foodId: food.id)),
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.04)),
+          ),
+          padding: const EdgeInsets.all(12),
+          child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
@@ -55,8 +63,8 @@ class FoodCard extends StatelessWidget {
             children: [
               Text(formatLkr(food.price, lang.t('common.currency')),
                   style: const TextStyle(fontWeight: FontWeight.w900, color: Color(0xFFFF6B2C))),
-              InkWell(
-                onTap: () {
+              IconButton.filled(
+                onPressed: () {
                   cart.add(food.id);
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                     backgroundColor: const Color(0xFFFF6B2C),
@@ -64,19 +72,19 @@ class FoodCard extends StatelessWidget {
                     duration: const Duration(milliseconds: 1200),
                   ));
                 },
-                borderRadius: BorderRadius.circular(10),
-                child: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFF6B2C),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(Icons.add, size: 16, color: Colors.white),
+                style: IconButton.styleFrom(
+                  backgroundColor: const Color(0xFFFF6B2C),
+                  minimumSize: const Size(32, 32),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
+                icon: const Icon(Icons.add_shopping_cart,
+                    size: 16, color: Colors.white),
               ),
             ],
           ),
         ],
+      ),
+        ),
       ),
     );
   }

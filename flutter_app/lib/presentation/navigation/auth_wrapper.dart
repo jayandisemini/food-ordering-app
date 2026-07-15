@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../state/app_session.dart';
+import '../screens/admin_dashboard_screen.dart';
 import '../screens/login_screen.dart';
 import 'root_shell.dart';
 
@@ -12,7 +15,6 @@ class AuthWrapper extends StatefulWidget {
 
 class _AuthWrapperState extends State<AuthWrapper> {
   late final Future<Session?> _initialSession;
-  bool _guestMode = false;
 
   @override
   void initState() {
@@ -37,11 +39,15 @@ class _AuthWrapperState extends State<AuthWrapper> {
             final session = streamedSession ??
                 snapshot.data ??
                 Supabase.instance.client.auth.currentSession;
-            if (_guestMode || session != null) {
+            final appSession = context.watch<AppSession>();
+            if (appSession.isAdmin) return const AdminDashboardScreen();
+            if (appSession.isGuest || session != null) {
               return const RootShell();
             }
             return LoginScreen(
-              onContinueAsGuest: () => setState(() => _guestMode = true),
+              startInRegisterMode: appSession.showRegister,
+              onRegisterIntentConsumed: appSession.consumeRegisterIntent,
+              onContinueAsGuest: appSession.enterGuest,
             );
           },
         );

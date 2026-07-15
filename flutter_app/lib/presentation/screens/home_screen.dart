@@ -20,7 +20,6 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final lang = context.watch<LanguageProvider>();
     final cart = context.watch<CartProvider>();
-    final filtered = _cat == 'all' ? foods : foods.where((f) => f.category == _cat).toList();
 
     return SafeArea(
       child: SingleChildScrollView(
@@ -82,30 +81,39 @@ class _HomeScreenState extends State<HomeScreen> {
             Text(lang.t('home.categories'),
                 style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
             const SizedBox(height: 12),
-            SizedBox(
-              height: 44,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: categories.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 8),
-                itemBuilder: (_, i) {
-                  final c = categories[i];
-                  final active = _cat == c['id'];
-                  return GestureDetector(
-                    onTap: () => setState(() => _cat = c['id']!),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: active ? const Color(0xFFFF6B2C) : const Color(0xFF1B1B1B),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Text('${c['emoji']}  ${c['name']}',
-                          style: TextStyle(fontWeight: FontWeight.w700, color: active ? Colors.white : Colors.white70)),
-                    ),
-                  );
-                },
-              ),
+            FutureBuilder<List<FoodCategory>>(
+              future: FoodRepository.categories(),
+              builder: (context, snapshot) {
+                final categories = [
+                  const FoodCategory('all', 'All', 'food'),
+                  ...snapshot.data ?? <FoodCategory>[],
+                ];
+                return SizedBox(
+                  height: 44,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: categories.length,
+                    separatorBuilder: (_, __) => const SizedBox(width: 8),
+                    itemBuilder: (_, i) {
+                      final c = categories[i];
+                      final active = _cat == c.id;
+                      return GestureDetector(
+                        onTap: () => setState(() => _cat = c.id),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: active ? const Color(0xFFFF6B2C) : const Color(0xFF1B1B1B),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Text('${c.emoji}  ${c.name}',
+                              style: TextStyle(fontWeight: FontWeight.w700, color: active ? Colors.white : Colors.white70)),
+                        ),
+                      );
+                    },
+                  ),
+                );
+              },
             ),
             const SizedBox(height: 24),
             Row(children: [
@@ -115,14 +123,29 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
             ]),
             const SizedBox(height: 12),
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: filtered.length,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 0.68,
-              ),
-              itemBuilder: (_, i) => FoodCard(food: filtered[i]),
+            FutureBuilder<List<Food>>(
+              future: FoodRepository.foods(category: _cat),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator(color: Color(0xFFFF6B2C)));
+                }
+                final foods = snapshot.data ?? [];
+                if (foods.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.all(24),
+                    child: Center(child: Text('No food items in the database.')),
+                  );
+                }
+                return GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: foods.length,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 0.68,
+                  ),
+                  itemBuilder: (_, i) => FoodCard(food: foods[i]),
+                );
+              },
             ),
           ],
         ),

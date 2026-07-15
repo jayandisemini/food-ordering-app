@@ -52,15 +52,18 @@ class CartProvider extends ChangeNotifier {
   }
 
   int get subtotal {
-    int s = 0;
-    for (final c in _items) {
-      final f = foods.firstWhere((x) => x.id == c.id, orElse: () => foods.first);
-      s += f.price * c.qty;
-    }
-    return s;
+    return 0;
   }
 
+  int subtotalFor(List<Food> foods) => _items.fold(0, (sum, c) {
+        final matches = foods.where((x) => x.id == c.id);
+        final food = matches.isEmpty ? null : matches.first;
+        return sum + ((food?.price ?? 0) * c.qty);
+      });
+
   int get deliveryFee => _items.isEmpty ? 0 : 150;
-  int get discount => promoApplied ? (subtotal * 0.5).round() : 0;
-  int get total => subtotal + deliveryFee - discount;
+  int discountFor(List<Food> foods) =>
+      promoApplied ? (subtotalFor(foods) * 0.5).round() : 0;
+  int totalFor(List<Food> foods) =>
+      subtotalFor(foods) + deliveryFee - discountFor(foods);
 }

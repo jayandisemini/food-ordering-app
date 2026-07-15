@@ -3,7 +3,9 @@ import 'package:provider/provider.dart';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/localization/language_provider.dart';
+import '../../state/app_session.dart';
 import 'cart_screen.dart';
+import 'notifications_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -42,6 +44,8 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final lang = context.watch<LanguageProvider>();
+    final appSession = context.watch<AppSession>();
+    final isGuest = appSession.isGuest;
     return SafeArea(
       child: ListView(
         padding: const EdgeInsets.all(20),
@@ -75,12 +79,20 @@ class ProfileScreen extends StatelessWidget {
           _tile(Icons.shopping_bag_outlined, lang.t('cart.title'),
               () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CartScreen()))),
           _tile(Icons.language, 'Language (${lang.locale.toUpperCase()})', () => _openLanguageSheet(context)),
-          _tile(Icons.notifications_none, 'Notifications', () {}),
+          if (!isGuest)
+            _tile(Icons.notifications_none, 'Notifications',
+                () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsScreen()))),
           _tile(Icons.help_outline, 'Help Center', () {}),
           _tile(Icons.lock_outline, 'Privacy & Security', () {}),
           const SizedBox(height: 14),
-          _tile(Icons.logout, 'Log out', () async {
-            await Supabase.instance.client.auth.signOut();
+          _tile(isGuest ? Icons.app_registration : Icons.logout,
+              isGuest ? 'Register' : 'Log out', () async {
+            if (isGuest) {
+              appSession.requireRegister();
+            } else {
+              await Supabase.instance.client.auth.signOut();
+              appSession.exit();
+            }
           }, danger: true),
         ],
       ),

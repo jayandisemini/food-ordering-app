@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   display_name TEXT,
   full_name TEXT,
+  role TEXT NOT NULL DEFAULT 'customer',
   email TEXT,
   avatar_url TEXT,
   phone TEXT,
@@ -13,6 +14,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS display_name TEXT;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS full_name TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'customer';
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS email TEXT;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS avatar_url TEXT;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS phone TEXT;
@@ -33,7 +35,9 @@ CREATE TABLE IF NOT EXISTS public.food_items (
   rating NUMERIC NOT NULL DEFAULT 0,
   time_estimate TEXT,
   price INTEGER NOT NULL,
-  emoji TEXT
+  emoji TEXT,
+  description TEXT NOT NULL DEFAULT '',
+  ingredients TEXT NOT NULL DEFAULT ''
 );
 
 CREATE TABLE IF NOT EXISTS public.orders (
@@ -69,6 +73,8 @@ ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS instructions TEXT;
 ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS payment_method TEXT NOT NULL DEFAULT 'cash';
 ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS restaurant_name TEXT;
 ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS eta TEXT;
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS track_lat DOUBLE PRECISION NOT NULL DEFAULT 6.9271;
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS track_lng DOUBLE PRECISION NOT NULL DEFAULT 79.8612;
 
 CREATE TABLE IF NOT EXISTS public.order_items (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -209,13 +215,13 @@ ON CONFLICT (id) DO UPDATE SET
   name = EXCLUDED.name,
   emoji = EXCLUDED.emoji;
 
-INSERT INTO public.food_items (id, name, restaurant_name, category_id, rating, time_estimate, price, emoji) VALUES
-  ('1', 'Margherita Pizza', 'Pizza Hut', 'pizza', 4.8, '20-25 min', 2400, 'pizza'),
-  ('2', 'Spicy Chicken Burger', 'Colombo Burger Co.', 'burgers', 4.7, '15-20 min', 1650, 'burger'),
-  ('3', 'Cheese Kottu + Egg', 'Kottu King', 'kottu', 4.6, '15-25 min', 950, 'kottu'),
-  ('4', 'Chicken Rice & Curry', 'Upali''s', 'rice', 4.9, '20-30 min', 850, 'rice'),
-  ('5', 'Salmon Nigiri Set', 'Nihon Bashi', 'healthy', 4.9, '25-35 min', 3200, 'sushi'),
-  ('6', 'King Coconut (Thambili)', 'Fresh Stop', 'beverages', 4.5, '5-10 min', 350, 'drink')
+INSERT INTO public.food_items (id, name, restaurant_name, category_id, rating, time_estimate, price, emoji, description, ingredients) VALUES
+  ('1', 'Margherita Pizza', 'Pizza Hut', 'pizza', 4.8, '20-25 min', 2400, 'pizza', 'Classic tomato, mozzarella, and basil pizza baked fresh.', 'Tomato sauce, mozzarella, basil, olive oil'),
+  ('2', 'Spicy Chicken Burger', 'Colombo Burger Co.', 'burgers', 4.7, '15-20 min', 1650, 'burger', 'Spicy grilled chicken burger with crisp lettuce and house sauce.', 'Chicken, bun, lettuce, tomato, chili mayo'),
+  ('3', 'Cheese Kottu + Egg', 'Kottu King', 'kottu', 4.6, '15-25 min', 950, 'kottu', 'Sri Lankan chopped roti tossed with cheese, egg, and spices.', 'Godamba roti, cheese, egg, leeks, curry spices'),
+  ('4', 'Chicken Rice & Curry', 'Upali''s', 'rice', 4.9, '20-30 min', 850, 'rice', 'Comforting chicken rice and curry with sambols and vegetables.', 'Rice, chicken curry, dhal, mallum, sambol'),
+  ('5', 'Salmon Nigiri Set', 'Nihon Bashi', 'healthy', 4.9, '25-35 min', 3200, 'sushi', 'Fresh salmon nigiri set prepared for a light premium meal.', 'Salmon, sushi rice, wasabi, soy sauce'),
+  ('6', 'King Coconut (Thambili)', 'Fresh Stop', 'beverages', 4.5, '5-10 min', 350, 'drink', 'Chilled king coconut served fresh.', 'King coconut')
 ON CONFLICT (id) DO UPDATE SET
   name = EXCLUDED.name,
   restaurant_name = EXCLUDED.restaurant_name,
@@ -223,4 +229,6 @@ ON CONFLICT (id) DO UPDATE SET
   rating = EXCLUDED.rating,
   time_estimate = EXCLUDED.time_estimate,
   price = EXCLUDED.price,
-  emoji = EXCLUDED.emoji;
+  emoji = EXCLUDED.emoji,
+  description = EXCLUDED.description,
+  ingredients = EXCLUDED.ingredients;

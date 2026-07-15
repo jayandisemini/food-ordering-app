@@ -1,24 +1,45 @@
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../state/app_session.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key, this.onContinueAsGuest});
+  const LoginScreen({
+    super.key,
+    this.onContinueAsGuest,
+    this.startInRegisterMode = false,
+    this.onRegisterIntentConsumed,
+  });
 
   final VoidCallback? onContinueAsGuest;
+  final bool startInRegisterMode;
+  final VoidCallback? onRegisterIntentConsumed;
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  static const _adminEmail = 'admin.foodiego.2026@foodiego.app';
+  static const _adminPassword = 'FoodieGoAdmin#2026';
+
+  final _name = TextEditingController();
   final _email = TextEditingController();
   final _password = TextEditingController();
   bool _isLoading = false;
   bool _registerMode = false;
 
   @override
+  void initState() {
+    super.initState();
+    _registerMode = widget.startInRegisterMode;
+    widget.onRegisterIntentConsumed?.call();
+  }
+
+  @override
   void dispose() {
+    _name.dispose();
     _email.dispose();
     _password.dispose();
     super.dispose();
@@ -27,6 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _submitEmailAuth() async {
     final email = _email.text.trim();
     final password = _password.text;
+    final name = _name.text.trim();
 
     if (email.isEmpty || password.length < 6) {
       _showError(
@@ -37,11 +59,25 @@ class _LoginScreenState extends State<LoginScreen> {
 
     setState(() => _isLoading = true);
     try {
+      if (!_registerMode &&
+          email.toLowerCase() == _adminEmail &&
+          password == _adminPassword) {
+        await Supabase.instance.client.auth.signInWithPassword(
+          email: email,
+          password: password,
+        );
+        context.read<AppSession>().enterAdmin();
+        return;
+      }
       if (_registerMode) {
+        if (name.isEmpty) {
+          _showError('Enter your name to create an account.');
+          return;
+        }
         await Supabase.instance.client.auth.signUp(
           email: email,
           password: password,
-          data: {'full_name': email.split('@').first},
+          data: {'full_name': name, 'display_name': name},
         );
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -151,6 +187,19 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: TextStyle(fontSize: 16, color: Colors.white70),
                       ),
                       const Spacer(),
+                      if (_registerMode) ...[
+                        TextField(
+                          controller: _name,
+                          textInputAction: TextInputAction.next,
+                          textCapitalization: TextCapitalization.words,
+                          style: const TextStyle(color: Colors.white),
+                          decoration: _inputDecoration(
+                            'Name',
+                            Icons.person_outline,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                      ],
                       TextField(
                         controller: _email,
                         keyboardType: TextInputType.emailAddress,

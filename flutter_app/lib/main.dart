@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/localization/language_provider.dart';
 import 'presentation/navigation/auth_wrapper.dart';
+import 'state/app_session.dart';
 import 'state/cart_provider.dart';
 
 Future<void> main() async {
@@ -30,6 +31,7 @@ class QuickBiteApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => LanguageProvider()),
+        ChangeNotifierProvider(create: (_) => AppSession()),
         ChangeNotifierProvider(create: (_) => CartProvider()),
       ],
       child: MaterialApp(

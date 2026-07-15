@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/localization/language_provider.dart';
+import '../../state/app_session.dart';
 import '../screens/favorites_screen.dart';
 import '../screens/home_screen.dart';
 import '../screens/orders_screen.dart';
@@ -29,14 +30,28 @@ class _RootShellState extends State<RootShell> {
   @override
   Widget build(BuildContext context) {
     final lang = context.watch<LanguageProvider>();
+    final appSession = context.watch<AppSession>();
+    final screens = appSession.isGuest
+        ? const [SearchScreen(), ProfileScreen()]
+        : _screens;
+    final index = _index.clamp(0, screens.length - 1);
     return Scaffold(
-      body: IndexedStack(index: _index, children: _screens),
+      body: IndexedStack(index: index, children: screens),
       bottomNavigationBar: NavigationBar(
-        selectedIndex: _index,
+        selectedIndex: index,
         onDestinationSelected: (i) => setState(() => _index = i),
         backgroundColor: const Color(0xFF1B1B1B),
         indicatorColor: const Color(0xFFFF6B2C).withValues(alpha: 0.18),
-        destinations: [
+        destinations: appSession.isGuest
+            ? [
+                NavigationDestination(
+                    icon: const Icon(Icons.search), label: lang.t('nav.search')),
+                NavigationDestination(
+                    icon: const Icon(Icons.person_outline),
+                    selectedIcon: const Icon(Icons.person),
+                    label: lang.t('nav.profile')),
+              ]
+            : [
           NavigationDestination(icon: const Icon(Icons.home_outlined), selectedIcon: const Icon(Icons.home), label: lang.t('nav.home')),
           NavigationDestination(icon: const Icon(Icons.search), label: lang.t('nav.search')),
           NavigationDestination(icon: const Icon(Icons.receipt_long_outlined), selectedIcon: const Icon(Icons.receipt_long), label: lang.t('nav.orders')),

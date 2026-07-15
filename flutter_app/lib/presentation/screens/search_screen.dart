@@ -18,9 +18,6 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     final lang = context.watch<LanguageProvider>();
-    final results = _q.isEmpty
-        ? foods
-        : foods.where((f) => f.name.toLowerCase().contains(_q.toLowerCase())).toList();
 
     return SafeArea(
       child: Padding(
@@ -43,12 +40,24 @@ class _SearchScreenState extends State<SearchScreen> {
           ),
           const SizedBox(height: 16),
           Expanded(
-            child: GridView.builder(
-              itemCount: results.length,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 0.68,
-              ),
-              itemBuilder: (_, i) => FoodCard(food: results[i]),
+            child: FutureBuilder<List<Food>>(
+              future: FoodRepository.foods(query: _q),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator(color: Color(0xFFFF6B2C)));
+                }
+                final results = snapshot.data ?? [];
+                if (results.isEmpty) {
+                  return const Center(child: Text('No matching food in the database.'));
+                }
+                return GridView.builder(
+                  itemCount: results.length,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 0.68,
+                  ),
+                  itemBuilder: (_, i) => FoodCard(food: results[i]),
+                );
+              },
             ),
           ),
         ]),
