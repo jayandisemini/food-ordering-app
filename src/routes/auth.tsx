@@ -17,6 +17,18 @@ function AuthPage() {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const nextPath = () => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("next") === "/admin" ? "/admin" : "/home";
+  };
+
+  const goAfterAuth = (signedInEmail: string) => {
+    if (signedInEmail.toLowerCase() === "admin@foodiego.com") {
+      navigate({ to: "/admin" });
+      return;
+    }
+    navigate({ to: nextPath() as "/home" });
+  };
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -25,7 +37,12 @@ function AuthPage() {
     }
 
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/home" });
+      const email = data.session?.user.email;
+      if (email?.toLowerCase() === "admin@foodiego.com") {
+        navigate({ to: "/admin" });
+      } else if (data.session) {
+        navigate({ to: "/home" });
+      }
     });
   }, [navigate]);
 
@@ -46,13 +63,13 @@ function AuthPage() {
         toast.success("Account created");
         navigate({ to: "/home" });
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
         if (error) throw error;
         toast.success("Welcome back");
-        navigate({ to: "/home" });
+        goAfterAuth(data.user.email ?? email);
       }
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Something went wrong");
@@ -65,7 +82,7 @@ function AuthPage() {
     setLoading(true);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/home` },
+      options: { redirectTo: `${window.location.origin}${nextPath()}` },
     });
     if (error) {
       toast.error(error.message);
