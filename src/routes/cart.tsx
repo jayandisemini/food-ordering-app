@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ArrowLeft, Minus, Plus, Trash2, Tag, ChevronRight, Loader2, CheckCircle2, X } from "lucide-react";
 import { toast } from "sonner";
 import { cartStore, useCart } from "@/lib/cart-store";
@@ -24,14 +24,6 @@ function CartPage() {
   const [promoInput, setPromoInput] = useState("");
   const [promoError, setPromoError] = useState("");
   const [promoApplied, setPromoApplied] = useState(false);
-
-  // Pre-populate demo items on first load
-  useEffect(() => {
-    if (cartStore.getCart().length === 0) {
-      cartStore.add("1", 1);
-      cartStore.add("2", 1);
-    }
-  }, []);
 
   const items = cart.map((c) => ({ ...c, food: findFood(c.id)! })).filter((c) => c.food);
   const subtotal = items.reduce((s, i) => s + i.food.price * i.qty, 0);
@@ -137,7 +129,7 @@ function CartPage() {
               className="press mt-5 flex w-full items-center gap-3 rounded-2xl border border-dashed border-border bg-surface px-4 py-3.5 text-sm font-semibold"
             >
               <Tag className="h-4 w-4 text-primary" />
-              <span>{promoApplied ? "BINGE50 ✓" : t("cartPages.promoCode")}</span>
+              <span>{promoApplied ? "BINGE50 applied" : t("cartPages.promoCode")}</span>
               <ChevronRight className="ml-auto h-4 w-4 text-muted-foreground" />
             </button>
 

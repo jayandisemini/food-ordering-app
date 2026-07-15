@@ -108,14 +108,20 @@ DROP POLICY IF EXISTS "Users update own profile" ON public.profiles;
 DROP POLICY IF EXISTS "Users insert own profile" ON public.profiles;
 DROP POLICY IF EXISTS "Users can view own profile" ON public.profiles;
 DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
+DROP POLICY IF EXISTS "Profiles are owned by user" ON public.profiles;
 DROP POLICY IF EXISTS "Categories are readable by everyone" ON public.categories;
+DROP POLICY IF EXISTS "Categories are readable" ON public.categories;
 DROP POLICY IF EXISTS "Food items are readable by everyone" ON public.food_items;
+DROP POLICY IF EXISTS "Food items are readable" ON public.food_items;
 DROP POLICY IF EXISTS "Users view own orders" ON public.orders;
 DROP POLICY IF EXISTS "Users create own orders" ON public.orders;
 DROP POLICY IF EXISTS "Users can manage own orders" ON public.orders;
+DROP POLICY IF EXISTS "Orders are owned by user" ON public.orders;
 DROP POLICY IF EXISTS "Users can manage own order items" ON public.order_items;
+DROP POLICY IF EXISTS "Order items are owned by order user" ON public.order_items;
 DROP POLICY IF EXISTS "Users manage own favorites" ON public.favorites;
 DROP POLICY IF EXISTS "Users can manage own favorites" ON public.favorites;
+DROP POLICY IF EXISTS "Favorites are owned by user" ON public.favorites;
 
 CREATE POLICY "Profiles are owned by user"
   ON public.profiles FOR ALL TO authenticated

@@ -1,13 +1,12 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
-import { Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { ArrowRight, Loader2, Lock, Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 
 export const Route = createFileRoute("/auth")({
-  head: () => ({ meta: [{ title: "Sign in — QuickBite" }] }),
+  head: () => ({ meta: [{ title: "Sign in - QuickBite" }] }),
   component: AuthPage,
 });
 
@@ -20,6 +19,11 @@ function AuthPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("mode") === "signup" || params.get("register") === "1") {
+      setMode("signup");
+    }
+
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) navigate({ to: "/home" });
     });
@@ -34,51 +38,51 @@ function AuthPage() {
           email,
           password,
           options: {
-            emailRedirectTo: window.location.origin,
-            data: { full_name: name },
+            emailRedirectTo: `${window.location.origin}/home`,
+            data: { full_name: name, display_name: name },
           },
         });
         if (error) throw error;
-        toast.success("Welcome to QuickBite! 🎉");
+        toast.success("Account created");
         navigate({ to: "/home" });
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
         if (error) throw error;
-        toast.success("Welcome back!");
+        toast.success("Welcome back");
         navigate({ to: "/home" });
       }
-    } catch (err: any) {
-      toast.error(err.message ?? "Something went wrong");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGoogleLogin = () => {
-  // Local machine එකේදී 404 නොවී කෙලින්ම හෝම් පිටුවට යවන්න
-  if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-    console.log("Local development detected. Bypassing OAuth for testing.");
-    window.location.href = "/home";
-  }  else {
-    // 'google' variable එක window එකේ තියෙනවාද කියා TypeScript වලට ආරක්ෂිතව හැඟවීම
-    const g = (window as any).google;
-    if (g && typeof g === 'function') {
-      g();
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/home` },
+    });
+    if (error) {
+      toast.error(error.message);
+      setLoading(false);
     }
-  }
-};
+  };
 
   return (
     <div className="phone-frame relative min-h-dvh overflow-hidden bg-foreground">
       <Toaster />
-      {/* Glow */}
       <div className="pointer-events-none absolute -left-20 -top-20 h-72 w-72 rounded-full bg-primary/30 blur-3xl" />
       <div className="pointer-events-none absolute -right-20 top-40 h-72 w-72 rounded-full bg-primary-glow/20 blur-3xl" />
 
       <div className="relative z-10 flex min-h-dvh flex-col px-6 pb-8 pt-14">
-        <div className="text-background animate-fade-up">
-          <div className="grid h-14 w-14 place-items-center rounded-2xl bg-primary text-3xl shadow-glow">
-            🍔
+        <div className="animate-fade-up text-background">
+          <div className="grid h-14 w-14 place-items-center rounded-2xl bg-primary text-xl font-black text-primary-foreground shadow-glow">
+            QB
           </div>
           <h1 className="mt-5 font-display text-3xl font-black">
             {mode === "signin" ? "Welcome back" : "Create account"}
@@ -86,14 +90,13 @@ function AuthPage() {
           <p className="mt-2 text-sm text-background/70">
             {mode === "signin"
               ? "Sign in to keep ordering your favorites"
-              : "Join QuickBite — fast, fresh, delivered."}
+              : "Join QuickBite - fast, fresh, delivered."}
           </p>
         </div>
 
-        {/* Glass card */}
         <form
           onSubmit={submit}
-          className="mt-8 rounded-3xl border border-background/15 bg-background/10 p-5 backdrop-blur-xl animate-fade-up"
+          className="mt-8 animate-fade-up rounded-3xl border border-background/15 bg-background/10 p-5 backdrop-blur-xl"
           style={{ animationDelay: "120ms" }}
         >
           {mode === "signup" && (
@@ -102,21 +105,23 @@ function AuthPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                placeholder="Jayandi Perera"
+                placeholder="Your name"
                 className="w-full bg-transparent text-background placeholder:text-background/40 focus:outline-none"
               />
             </Field>
           )}
+
           <Field label="Email" icon={<Mail className="h-4 w-4" />}>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              placeholder="you@quickbite.app"
+              placeholder="you@example.com"
               className="w-full bg-transparent text-background placeholder:text-background/40 focus:outline-none"
             />
           </Field>
+
           <Field label="Password" icon={<Lock className="h-4 w-4" />}>
             <input
               type="password"
@@ -124,26 +129,23 @@ function AuthPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={6}
-              placeholder="••••••••"
+              placeholder="Password"
               className="w-full bg-transparent text-background placeholder:text-background/40 focus:outline-none"
             />
           </Field>
-
-          {mode === "signin" && (
-            <button
-              type="button"
-              className="ml-auto block text-xs font-semibold text-background/70 hover:text-background"
-            >
-              Forgot password?
-            </button>
-          )}
 
           <button
             type="submit"
             disabled={loading}
             className="press mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-4 font-display font-bold text-primary-foreground shadow-glow disabled:opacity-60"
           >
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : mode === "signin" ? "Sign in" : "Create account"}
+            {loading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : mode === "signin" ? (
+              "Sign in"
+            ) : (
+              "Create account"
+            )}
             {!loading && <ArrowRight className="h-4 w-4" />}
           </button>
         </form>
@@ -157,7 +159,7 @@ function AuthPage() {
         <button
           onClick={handleGoogleLogin}
           disabled={loading}
-          className="press flex items-center justify-center gap-3 rounded-2xl border border-background/20 bg-background py-3.5 font-semibold text-foreground"
+          className="press flex items-center justify-center gap-3 rounded-2xl border border-background/20 bg-background py-3.5 font-semibold text-foreground disabled:opacity-60"
         >
           <GoogleIcon /> Continue with Google
         </button>
@@ -172,8 +174,12 @@ function AuthPage() {
             {mode === "signin" ? "Create account" : "Sign in"}
           </button>
         </p>
-        <Link to="/home" className="mt-3 text-center text-xs text-background/50 underline-offset-4 hover:underline">
-          Continue as guest →
+
+        <Link
+          to="/home"
+          className="mt-3 text-center text-xs text-background/50 underline-offset-4 hover:underline"
+        >
+          Continue as guest
         </Link>
       </div>
     </div>
@@ -191,7 +197,9 @@ function Field({
 }) {
   return (
     <label className="mb-3 block">
-      <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-background/60">{label}</span>
+      <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-background/60">
+        {label}
+      </span>
       <div className="flex items-center gap-2 rounded-2xl border border-background/15 bg-background/5 px-4 py-3">
         {icon && <span className="text-background/60">{icon}</span>}
         {children}

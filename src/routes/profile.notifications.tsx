@@ -3,6 +3,8 @@ import { ArrowLeft, Check } from "lucide-react";
 import { useState, useEffect } from "react";
 import { BottomNav } from "@/components/bottom-nav";
 import { useI18n } from "@/lib/i18n";
+import { useAuth } from "@/lib/use-auth";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/profile/notifications")({
   head: () => ({ meta: [{ title: "Notifications — QuickBite" }] }),
@@ -17,9 +19,6 @@ type Notif = {
   time: string;
   unread?: boolean;
 };
-
-import { useAuth } from "@/lib/use-auth";
-import { supabase } from "@/integrations/supabase/client";
 
 export default function NotificationsPage() {
   const { t } = useI18n();
@@ -67,6 +66,43 @@ export default function NotificationsPage() {
     };
   }, [user]);
 
+  useEffect(() => {
+    if (!justMarked) return;
+    const t = setTimeout(() => setJustMarked(false), 2000);
+    return () => clearTimeout(t);
+  }, [justMarked]);
+
+  if (!user) {
+    return (
+      <div className="phone-frame flex min-h-dvh flex-col bg-background">
+        <header className="relative flex items-center justify-between px-5 pt-6">
+          <Link
+            to="/home"
+            className="press grid h-11 w-11 place-items-center rounded-2xl bg-surface shadow-soft"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Link>
+          <h1 className="font-display text-xl font-black">{t("notificationsTitle")}</h1>
+          <div className="h-11 w-11" />
+        </header>
+        <div className="flex flex-1 flex-col items-center justify-center px-8 text-center">
+          <BellIcon />
+          <h2 className="mt-5 font-display text-2xl font-black">Register to get notifications</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Create an account to receive order updates and offers.
+          </p>
+          <a
+            href="/auth?mode=signup"
+            className="press mt-6 rounded-2xl bg-primary px-6 py-3 text-sm font-bold text-primary-foreground shadow-glow"
+          >
+            Register
+          </a>
+        </div>
+        <BottomNav />
+      </div>
+    );
+  }
+
   const today = notifications;
   const yesterday: Notif[] = []; // Real-time groups can be done via date math later
 
@@ -84,12 +120,6 @@ export default function NotificationsPage() {
     setNotifications((xs) => xs.map((n) => ({ ...n, unread: false })));
     setJustMarked(true);
   };
-
-  useEffect(() => {
-    if (!justMarked) return;
-    const t = setTimeout(() => setJustMarked(false), 2000);
-    return () => clearTimeout(t);
-  }, [justMarked]);
 
   return (
     <div className="phone-frame flex min-h-dvh flex-col bg-background animate-in slide-in-from-right duration-300">
@@ -130,6 +160,14 @@ export default function NotificationsPage() {
 
       <div className="h-24" />
       <BottomNav />
+    </div>
+  );
+}
+
+function BellIcon() {
+  return (
+    <div className="grid h-20 w-20 place-items-center rounded-3xl bg-primary/15 text-primary">
+      <span className="text-3xl">!</span>
     </div>
   );
 }

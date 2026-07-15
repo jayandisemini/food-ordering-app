@@ -67,9 +67,13 @@ function ProfilePage() {
 
   const signOut = async () => {
     setLogoutOpen(false);
-    await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     toast.success("Signed out");
-    navigate({ to: "/auth" });
+    await navigate({ to: "/auth" });
   };
 
   const pickLang = (code: Lang) => {
@@ -121,7 +125,7 @@ function ProfilePage() {
             to="/auth"
             className="press flex items-center gap-1 rounded-xl bg-primary px-3 py-2 text-xs font-bold text-primary-foreground"
           >
-            <LogIn className="h-3.5 w-3.5" /> {t("signIn")}
+            <LogIn className="h-3.5 w-3.5" /> Register
           </Link>
         )}
       </div>
@@ -226,9 +230,11 @@ function ProfilePage() {
               : [
                   {
                     icon: LogIn,
-                    label: t("register") ?? "Register",
-                    sub: t("createAccount") ?? "Create a new account",
-                    onClick: () => navigate({ to: "/auth" }),
+                    label: "Register",
+                    sub: "Create a new account",
+                    onClick: () => {
+                      window.location.href = "/auth?mode=signup";
+                    },
                   } as Item,
                 ]),
           ]}

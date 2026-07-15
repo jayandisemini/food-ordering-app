@@ -1,12 +1,13 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { MapPin, Bell, Search, Star, Clock, Flame, ShoppingBag } from "lucide-react";
+import { MapPin, Bell, Search, Star, Clock, Flame, ShoppingBag, Moon, Sun } from "lucide-react";
 import { categories, foods } from "@/lib/food-data";
 import { FoodCard } from "@/components/food-card";
 import { BottomNav } from "@/components/bottom-nav";
 import { useAuth } from "@/lib/use-auth";
 import { useCart } from "@/lib/cart-store";
 import { useI18n } from "@/lib/i18n";
+import { useTheme } from "@/lib/theme";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import bannerImg from "@/assets/banner-feast.jpg";
 
@@ -54,7 +55,7 @@ function Home() {
         </div>
 
         <h1 className="mt-5 font-display text-3xl font-black leading-tight">
-          Hi {firstName} 👋<br />
+          Hi {firstName}<br />
           What's making you <span className="text-primary">hungry</span>?
         </h1>
 
@@ -191,12 +192,25 @@ function Home() {
 
 function HeaderActions({ firstName, avatarUrl }: { firstName: string; avatarUrl: string | null | undefined }) {
   const cart = useCart();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { theme, toggle } = useTheme();
   const count = cart.reduce((a, b) => a + b.qty, 0);
   const initial = firstName.charAt(0).toUpperCase() || "U";
+
+  const openNotifications = () => {
+    if (!user) {
+      window.location.href = "/auth?mode=signup";
+      return;
+    }
+    navigate({ to: "/profile/notifications" });
+  };
+
   return (
     <div className="flex items-center gap-2.5">
-      <Link
-        to="/cart"
+      <button
+        type="button"
+        onClick={() => navigate({ to: "/cart" })}
         className="press relative grid h-11 w-11 place-items-center rounded-2xl bg-surface shadow-soft"
         aria-label="Cart"
       >
@@ -206,10 +220,23 @@ function HeaderActions({ firstName, avatarUrl }: { firstName: string; avatarUrl:
             {count}
           </span>
         )}
-      </Link>
-      <button className="press relative grid h-11 w-11 place-items-center rounded-2xl bg-surface shadow-soft" aria-label="Notifications">
+      </button>
+      <button
+        type="button"
+        onClick={openNotifications}
+        className="press relative grid h-11 w-11 place-items-center rounded-2xl bg-surface shadow-soft"
+        aria-label="Notifications"
+      >
         <Bell className="h-5 w-5" />
         <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-primary" />
+      </button>
+      <button
+        type="button"
+        onClick={toggle}
+        className="press grid h-11 w-11 place-items-center rounded-2xl bg-surface shadow-soft"
+        aria-label="Toggle theme"
+      >
+        {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
       </button>
       <Link to="/profile" aria-label="Profile" className="press">
         <Avatar className="h-11 w-11 ring-2 ring-primary/60 shadow-soft">
