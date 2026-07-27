@@ -34,6 +34,24 @@ function CheckoutPage() {
 
       <div className="space-y-5 px-5 pt-4">
         <Section title="Delivery address" icon={<MapPin className="h-4 w-4" />}>
+          <div className="mb-2 flex gap-1.5 overflow-x-auto pb-1">
+            {[
+              { label: "🏠 Home", val: "221B Galle Road, Colombo 03" },
+              { label: "💼 Work", val: "World Trade Center, Level 18, Colombo 01" },
+              { label: "🎓 Campus", val: "University Campus Student Center, Building B" },
+            ].map((p) => (
+              <button
+                key={p.label}
+                type="button"
+                onClick={() => setAddress(p.val)}
+                className={`rounded-full px-2.5 py-1 text-[11px] font-bold transition-all ${
+                  address === p.val ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-accent"
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
           <textarea
             value={address}
             onChange={(e) => setAddress(e.target.value)}
