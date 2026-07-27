@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowLeft, Phone, MessageCircle, Check } from "lucide-react";
 import { DeliveryMap } from "@/components/delivery-map";
-
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/track")({
   head: () => ({ meta: [{ title: "Tracking your order — QuickBite" }] }),
@@ -18,9 +18,31 @@ const steps = [
 
 function TrackPage() {
   const [active, setActive] = useState(1);
+
   useEffect(() => {
-    const t = setInterval(() => setActive((a) => Math.min(a + 1, steps.length - 1)), 3500);
-    return () => clearInterval(t);
+    // Listen for live Supabase realtime order updates
+    const channel = supabase
+      .channel("live-order-tracker")
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "orders" }, (payload) => {
+        if (payload.new && payload.new.status) {
+          const statusMap: Record<string, number> = {
+            confirmed: 0,
+            cooking: 1,
+            picked_up: 2,
+            delivered: 3,
+          };
+          if (statusMap[payload.new.status] !== undefined) {
+            setActive(statusMap[payload.new.status]);
+          }
+        }
+      })
+      .subscribe();
+
+    const t = setInterval(() => setActive((a) => Math.min(a + 1, steps.length - 1)), 5000);
+    return () => {
+      clearInterval(t);
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   return (

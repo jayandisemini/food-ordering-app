@@ -1,12 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowLeft, Minus, Plus, Trash2, Tag, ChevronRight, Loader2, CheckCircle2, X } from "lucide-react";
+import { ArrowLeft, Minus, Plus, Trash2, Tag, ChevronRight, Loader2, CheckCircle2, X, Users } from "lucide-react";
 import { toast } from "sonner";
 import { cartStore, useCart } from "@/lib/cart-store";
 import { findFood, formatLkr } from "@/lib/food-data";
 import { useAuth } from "@/lib/use-auth";
 import { BottomNav } from "@/components/bottom-nav";
 import { useI18n } from "@/lib/i18n";
+import { GroupCartModal } from "@/components/group-cart-modal";
 
 export const Route = createFileRoute("/cart")({
   head: () => ({ meta: [{ title: "Your cart — QuickBite" }] }),
@@ -56,14 +57,23 @@ function CartPage() {
     }, 1500);
   };
 
+  const [groupOpen, setGroupOpen] = useState(false);
+
   return (
     <div className="phone-frame flex min-h-dvh flex-col bg-background">
+      <GroupCartModal isOpen={groupOpen} onClose={() => setGroupOpen(false)} />
       <header className="flex items-center justify-between px-5 pt-6 animate-fade-up">
         <Link to="/home" className="press grid h-11 w-11 place-items-center rounded-2xl bg-surface shadow-soft">
           <ArrowLeft className="h-5 w-5" />
         </Link>
         <h1 className="font-display text-xl font-black">{t("cartPages.title")}</h1>
-        <div className="h-11 w-11" />
+        <button
+          onClick={() => setGroupOpen(true)}
+          className="press flex h-11 items-center gap-1.5 rounded-2xl bg-primary/10 px-3 text-xs font-bold text-primary shadow-soft hover:bg-primary/20"
+        >
+          <Users className="h-4 w-4" />
+          Group
+        </button>
       </header>
 
       <div className="flex-1 px-5 pt-4 pb-40">
