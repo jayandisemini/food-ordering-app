@@ -41,7 +41,7 @@ class _RootShellState extends State<RootShell> {
         selectedIndex: index,
         onDestinationSelected: (i) => setState(() => _index = i),
         backgroundColor: const Color(0xFF1B1B1B),
-        indicatorColor: const Color(0xFFFF6B2C).withOpacity(0.18),
+        indicatorColor: const Color(0xFFFF6B2C).withValues(alpha: 0.18),
         destinations: appSession.isGuest
             ? [
                 NavigationDestination(
