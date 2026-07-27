@@ -244,6 +244,29 @@ function ProfilePage() {
       <div className="h-24" />
       <BottomNav />
 
+      {/* Loyalty & Rewards Progress Card */}
+      <div className="mx-5 mt-4 rounded-3xl bg-gradient-to-r from-primary to-orange-600 p-4 text-white shadow-soft animate-fade-up">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">🏆</span>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider text-white/80">Gold Rewards Member</p>
+              <p className="font-display text-lg font-black leading-tight">450 QuickBite Points</p>
+            </div>
+          </div>
+          <span className="rounded-full bg-white/20 px-2.5 py-1 text-xs font-bold backdrop-blur">Tier 2</span>
+        </div>
+        <div className="mt-3">
+          <div className="flex justify-between text-[11px] font-semibold text-white/90">
+            <span>Progress to Free Meal</span>
+            <span>450 / 600 pts</span>
+          </div>
+          <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-black/20">
+            <div className="h-full w-[75%] rounded-full bg-white transition-all duration-500" />
+          </div>
+        </div>
+      </div>
+
       {/* Language sheet */}
       <Sheet open={langOpen} onOpenChange={setLangOpen}>
         <SheetContent

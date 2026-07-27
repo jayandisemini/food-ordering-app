@@ -24,6 +24,8 @@ function FoodDetail() {
   const { id } = Route.useParams();
   const food = findFood(id);
   const [qty, setQty] = useState(1);
+  const [spice, setSpice] = useState(1);
+  const [toppings, setToppings] = useState<string[]>([]);
   const favs = useFavorites();
   const navigate = useNavigate();
   const { t } = useI18n();
@@ -87,6 +89,50 @@ function FoodDetail() {
 
         <h3 className="mt-7 text-xs font-bold uppercase tracking-wider text-muted-foreground">Description</h3>
         <p className="mt-2 text-[15px] leading-relaxed text-foreground/80">{displayDesc}</p>
+
+        {/* Spice Level Stepper */}
+        <h3 className="mt-6 text-xs font-bold uppercase tracking-wider text-muted-foreground">Spice Level</h3>
+        <div className="mt-2.5 flex gap-2">
+          {["🌶️ Mild", "🌶️🌶️ Medium", "🔥 Extra Spicy"].map((s, idx) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => setSpice(idx)}
+              className={`rounded-xl px-3 py-2 text-xs font-bold transition-all ${
+                spice === idx ? "bg-primary text-primary-foreground shadow-glow" : "bg-surface text-muted-foreground hover:bg-surface-muted"
+              }`}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+
+        {/* Extra Toppings */}
+        <h3 className="mt-6 text-xs font-bold uppercase tracking-wider text-muted-foreground">Customize Extra Toppings</h3>
+        <div className="mt-2.5 space-y-2">
+          {[
+            { id: "cheese", label: "Extra Cheese 🧀", price: 200 },
+            { id: "sauce", label: "Special Garlic Sauce 🧄", price: 150 },
+            { id: "egg", label: "Fried Egg 🍳", price: 120 },
+          ].map((t) => {
+            const isSelected = toppings.includes(t.id);
+            return (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() =>
+                  setToppings((prev) => (prev.includes(t.id) ? prev.filter((i) => i !== t.id) : [...prev, t.id]))
+                }
+                className={`flex w-full items-center justify-between rounded-2xl border p-3 text-xs font-bold transition-all ${
+                  isSelected ? "border-primary bg-primary/10 text-foreground" : "border-border bg-surface text-muted-foreground"
+                }`}
+              >
+                <span>{t.label}</span>
+                <span>+{formatLkr(t.price)}</span>
+              </button>
+            );
+          })}
+        </div>
 
         <h3 className="mt-7 text-xs font-bold uppercase tracking-wider text-muted-foreground">Quantity</h3>
         <div className="mt-3 flex items-center gap-4">
