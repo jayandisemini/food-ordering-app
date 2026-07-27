@@ -90,3 +90,20 @@ export function FoodCard({ food, index = 0 }: { food: Food; index?: number }) {
     </div>
   );
 }
+
+export function FoodCardSkeleton() {
+  return (
+    <div className="overflow-hidden rounded-3xl bg-card p-3 shadow-soft animate-pulse">
+      <div className="aspect-[5/4] w-full rounded-2xl bg-muted" />
+      <div className="mt-3 space-y-2">
+        <div className="h-3 w-1/3 rounded bg-muted" />
+        <div className="h-4 w-3/4 rounded bg-muted" />
+        <div className="flex items-center justify-between pt-2">
+          <div className="h-4 w-1/4 rounded bg-muted" />
+          <div className="h-8 w-8 rounded-2xl bg-muted" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
