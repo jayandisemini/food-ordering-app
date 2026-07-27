@@ -29,7 +29,7 @@ class FoodCard extends StatelessWidget {
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white.withOpacity(0.04)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.04)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -58,7 +58,7 @@ class FoodCard extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   fontSize: 11,
-                  color: Colors.white.withOpacity(0.55),
+                  color: Colors.white.withValues(alpha: 0.55),
                 ),
               ),
               const SizedBox(height: 6),
