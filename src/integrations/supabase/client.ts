@@ -2,8 +2,11 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
 // 🚀 සෘජුවම ඔයාගේ සැබෑ Supabase Cloud Project එකට සම්බන්ධ කිරීම (Production Ready):
-const SUPABASE_URL = "https://jkuqaajnlftacqqanhep.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_4V8vSW6_K8okyM-VWrDXww_kxI9JzjV";
+const SUPABASE_URL =
+  import.meta.env.VITE_SUPABASE_URL || "https://utlwvuzuzjgarrjwcrck.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY =
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0bHd2dXp1empnYXJyandjcmNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MTkyOTgsImV4cCI6MjA5NzE5NTI5OH0.-3yqgvvlu0Jg996xguFJfaUJZzY37DmcUnsowAnLbaw";
 
 function createSupabaseClient() {
   if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {

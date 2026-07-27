@@ -11,8 +11,9 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Supabase.initialize(
-    url: 'https://jkuqaajnlftacqqanhep.supabase.co',
-    publishableKey: 'sb_publishable_4V8vSW6_K8okyM-VWrDXww_kxI9JzjV',
+    url: 'https://utlwvuzuzjgarrjwcrck.supabase.co',
+    publishableKey:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0bHd2dXp1empnYXJyandjcmNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MTkyOTgsImV4cCI6MjA5NzE5NTI5OH0.-3yqgvvlu0Jg996xguFJfaUJZzY37DmcUnsowAnLbaw',
     authOptions: const FlutterAuthClientOptions(
       authFlowType: AuthFlowType.pkce,
     ),
