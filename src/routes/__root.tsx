@@ -89,6 +89,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:title", content: "QuickBite" },
     ],
     links: [
+      { rel: "manifest", href: "/manifest.json" },
       { rel: "stylesheet", href: appCss },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
@@ -118,8 +119,18 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+import { PwaInstallBanner } from "@/components/pwa-install-banner";
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+
+  useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker
+        .register("/sw.js")
+        .catch((err) => console.log("Service Worker registration failed:", err));
+    }
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -127,6 +138,7 @@ function RootComponent() {
         <I18nProvider>
           {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
           <Outlet />
+          <PwaInstallBanner />
         </I18nProvider>
       </ThemeProvider>
     </QueryClientProvider>

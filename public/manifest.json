@@ -1,0 +1,22 @@
+{
+  "short_name": "QuickBite",
+  "name": "QuickBite — Fast, Fresh Food Delivery",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#121212",
+  "theme_color": "#FF6B2C",
+  "display": "standalone",
+  "orientation": "portrait",
+  "description": "Modern food ordering and live logistics tracking platform."
+}
