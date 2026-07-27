@@ -100,6 +100,25 @@ function SearchPage() {
             <>
               <button
                 type="button"
+                onClick={() => {
+                  const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+                  if (!SpeechRecognition) {
+                    toast.error("Voice search is not supported in this browser.");
+                    return;
+                  }
+                  const recognition = new SpeechRecognition();
+                  recognition.lang = "en-US";
+                  recognition.start();
+                  toast.info("Listening... speak dish name");
+                  recognition.onresult = (event: any) => {
+                    const transcript = event.results[0][0].transcript;
+                    setQ(transcript);
+                    toast.success(`Searching for: "${transcript}"`);
+                  };
+                  recognition.onerror = () => {
+                    toast.error("Could not recognize voice input");
+                  };
+                }}
                 className="press grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary/15 text-primary"
                 aria-label="Voice search"
               >

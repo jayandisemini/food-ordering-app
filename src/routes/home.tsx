@@ -131,8 +131,32 @@ function Home() {
         </div>
       </div>
 
+      {/* Order Again (Personalized Favorites) */}
+      <div className="mt-6 px-5">
+        <div className="flex items-center justify-between">
+          <h2 className="font-display text-lg font-black">⚡ Order Again</h2>
+          <Link to="/favorites" className="text-xs font-semibold text-primary">View all</Link>
+        </div>
+        <div className="no-scrollbar mt-3 flex gap-3 overflow-x-auto pb-2">
+          {foods.slice(0, 4).map((f) => (
+            <Link
+              key={`reorder-${f.id}`}
+              to="/food/$id"
+              params={{ id: f.id }}
+              className="press flex w-44 shrink-0 items-center gap-3 rounded-2xl bg-surface p-2.5 shadow-soft hover:bg-surface-muted"
+            >
+              <img src={f.image} alt={f.name} className="h-12 w-12 rounded-xl object-cover" />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-xs font-bold">{f.name}</p>
+                <p className="text-[10px] text-muted-foreground">{f.restaurant}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+
       {/* Popular */}
-      <div className="mt-7 px-5">
+      <div className="mt-6 px-5">
         <div className="flex items-baseline justify-between">
           <h2 className="font-display text-xl font-black">
             <Flame className="mr-1 inline h-5 w-5 text-primary" />
