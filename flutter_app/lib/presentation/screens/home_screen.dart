@@ -164,7 +164,7 @@ class _HomeScreenState extends State<HomeScreen> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(22),
           gradient: const LinearGradient(colors: [Color(0xFFFF6B2C), Color(0xFFFF9152)]),
-          boxShadow: [BoxShadow(color: const Color(0xFFFF6B2C).withOpacity(0.35), blurRadius: 20, offset: const Offset(0, 10))],
+          boxShadow: [BoxShadow(color: const Color(0xFFFF6B2C).withValues(alpha: 0.35), blurRadius: 20, offset: const Offset(0, 10))],
         ),
         padding: const EdgeInsets.all(18),
         child: const Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: [
