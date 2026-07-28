@@ -9,32 +9,18 @@ import { useCart } from "@/lib/cart-store";
 import { useI18n } from "@/lib/i18n";
 import { useTheme } from "@/lib/theme";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import bannerImg from "@/assets/banner-feast.jpg";
-
+import { ModernHeroBanner } from "@/components/modern-hero-banner";
 
 export const Route = createFileRoute("/home")({
   head: () => ({ meta: [{ title: "QuickBite — Discover" }] }),
   component: Home,
 });
 
-const banners = [
-  { title: "50% OFF first order", sub: "Use code WELCOME50 at checkout", img: bannerImg, tone: "from-primary to-primary-glow" },
-  { title: "Free delivery weekend", sub: "On orders over Rs 2,000 — Fri to Sun", img: bannerImg, tone: "from-foreground to-foreground/70" },
-  { title: "Late-night cravings?", sub: "Open kitchens until 2 AM", img: bannerImg, tone: "from-primary-glow to-primary" },
-
-];
-
 function Home() {
   const [cat, setCat] = useState("all");
-  const [bannerIdx, setBannerIdx] = useState(0);
   const { profile } = useAuth();
   const { t } = useI18n();
   const firstName = (profile?.display_name ?? "there").split(" ")[0];
-
-  useEffect(() => {
-    const t = setInterval(() => setBannerIdx((i) => (i + 1) % banners.length), 4000);
-    return () => clearInterval(t);
-  }, []);
 
   const filtered = cat === "all" ? foods : foods.filter((f) => f.category === cat);
   const trending = foods.slice(0, 4);
@@ -68,39 +54,8 @@ function Home() {
         </Link>
       </header>
 
-      {/* Promo banner */}
-      <div className="mt-5 px-5">
-        <div className="relative h-32 overflow-hidden rounded-3xl shadow-card">
-          {banners.map((b, idx) => (
-            <div
-              key={idx}
-              className={`absolute inset-0 transition-all duration-700 ${
-                idx === bannerIdx ? "opacity-100 translate-x-0" : idx < bannerIdx ? "-translate-x-full opacity-0" : "translate-x-full opacity-0"
-              }`}
-            >
-              <img src={b.img} alt="" className="absolute inset-0 h-full w-full object-cover" />
-              <div className={`absolute inset-0 bg-gradient-to-r ${b.tone} opacity-95`} />
-              <div className="absolute inset-0 bg-foreground/35" />
-              <div className="relative flex h-full flex-col justify-center p-5 text-white drop-shadow-md">
-                <span className="w-fit rounded-full bg-white/25 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white backdrop-blur">
-                  Limited
-                </span>
-                <h3 className="mt-2 font-display text-xl font-black leading-tight text-white">{b.title}</h3>
-                <p className="mt-1 text-xs text-white/90">{b.sub}</p>
-
-              </div>
-            </div>
-          ))}
-          <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1">
-            {banners.map((_, idx) => (
-              <span
-                key={idx}
-                className={`h-1 rounded-full transition-all ${idx === bannerIdx ? "w-5 bg-background" : "w-1 bg-background/50"}`}
-              />
-            ))}
-          </div>
-        </div>
-      </div>
+      {/* Upgraded Modern Hero Banner Carousel */}
+      <ModernHeroBanner />
 
       {/* Categories */}
       <div className="mt-6">
