@@ -1,33 +1,41 @@
 import { useEffect, useRef, useState } from "react";
-import { MapPin, Navigation, Bike, Compass, AlertCircle } from "lucide-react";
+import { Bike, Sparkles, Navigation, MapPin } from "lucide-react";
 
 declare global {
   interface Window {
     google?: any;
+    L?: any;
     __qbInitMap?: () => void;
     gm_authFailure?: () => void;
   }
 }
 
 const RESTAURANT = { lat: 6.9271, lng: 79.8612, label: "Flame Grill Kitchen" }; // Colombo 03
-const CUSTOMER = { lat: 6.9344, lng: 79.8428, label: "Your Location" };
+const CUSTOMER = { lat: 6.9344, lng: 79.8428, label: "Your Doorstep" };
 
 type Props = { progress: number }; // 0..1 along the route
 
 export function DeliveryMap({ progress }: Props) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<any>(null);
-  const riderRef = useRef<any>(null);
-  const drivenRef = useRef<any>(null);
-  const pathRef = useRef<any>(null);
+  const googleContainerRef = useRef<HTMLDivElement>(null);
+  const leafletContainerRef = useRef<HTMLDivElement>(null);
+
+  const googleMapRef = useRef<any>(null);
+  const googleRiderRef = useRef<any>(null);
+  const googleDrivenRef = useRef<any>(null);
+  const googlePathRef = useRef<any>(null);
+
+  const leafletMapRef = useRef<any>(null);
+  const leafletRiderRef = useRef<any>(null);
+  const leafletDrivenRef = useRef<any>(null);
 
   const [useFallback, setUseFallback] = useState(false);
-  const [ready, setReady] = useState(false);
+  const [googleReady, setGoogleReady] = useState(false);
+  const [leafletReady, setLeafletReady] = useState(false);
 
-  // Catch Google Maps auth failures (e.g. invalid/restricted API keys)
+  // 1. Google Maps Script Loading
   useEffect(() => {
     window.gm_authFailure = () => {
-      console.warn("[DeliveryMap]: Google Maps key auth failed. Switching to Interactive Vector Map.");
+      console.warn("[DeliveryMap]: Google Maps key failed authentication. Switching to OpenStreetMap.");
       setUseFallback(true);
     };
 
@@ -40,12 +48,12 @@ export function DeliveryMap({ progress }: Props) {
     }
 
     if (window.google?.maps) {
-      setReady(true);
+      setGoogleReady(true);
       return;
     }
 
     const existing = document.querySelector<HTMLScriptElement>("script[data-qb-gmaps]");
-    window.__qbInitMap = () => setReady(true);
+    window.__qbInitMap = () => setGoogleReady(true);
 
     if (!existing) {
       const s = document.createElement("script");
@@ -60,26 +68,50 @@ export function DeliveryMap({ progress }: Props) {
     }
   }, []);
 
-  // Initialize Google Maps if valid
+  // 2. Leaflet OpenStreetMap Fallback Loader
   useEffect(() => {
-    if (!ready || useFallback || !containerRef.current || mapRef.current) return;
+    if (!useFallback) return;
+
+    if (window.L) {
+      setLeafletReady(true);
+      return;
+    }
+
+    // Load Leaflet CSS
+    if (!document.querySelector("link[data-qb-leaflet-css]")) {
+      const link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+      link.dataset.qbLeafletCss = "1";
+      document.head.appendChild(link);
+    }
+
+    // Load Leaflet JS
+    if (!document.querySelector("script[data-qb-leaflet-js]")) {
+      const script = document.createElement("script");
+      script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+      script.dataset.qbLeafletJs = "1";
+      script.onload = () => setLeafletReady(true);
+      script.onerror = () => console.error("Leaflet load error");
+      document.head.appendChild(script);
+    }
+  }, [useFallback]);
+
+  // 3. Initialize Google Maps
+  useEffect(() => {
+    if (!googleReady || useFallback || !googleContainerRef.current || googleMapRef.current) return;
 
     try {
       const g = window.google.maps;
-      const map = new g.Map(containerRef.current, {
+      const map = new g.Map(googleContainerRef.current, {
         center: { lat: (RESTAURANT.lat + CUSTOMER.lat) / 2, lng: (RESTAURANT.lng + CUSTOMER.lng) / 2 },
         zoom: 14,
         disableDefaultUI: true,
         gestureHandling: "greedy",
         clickableIcons: false,
-        styles: [
-          { featureType: "poi", stylers: [{ visibility: "off" }] },
-          { featureType: "transit", stylers: [{ visibility: "off" }] },
-        ],
       });
-      mapRef.current = map;
+      googleMapRef.current = map;
 
-      // Curved route calculation
       const steps = 24;
       const path: { lat: number; lng: number }[] = [];
       for (let i = 0; i <= steps; i++) {
@@ -89,7 +121,7 @@ export function DeliveryMap({ progress }: Props) {
         const offset = Math.sin(t * Math.PI) * 0.004;
         path.push({ lat: lat + offset, lng: lng - offset });
       }
-      pathRef.current = path;
+      googlePathRef.current = path;
 
       new g.Polyline({
         path,
@@ -99,7 +131,7 @@ export function DeliveryMap({ progress }: Props) {
         strokeWeight: 4,
       });
 
-      drivenRef.current = new g.Polyline({
+      googleDrivenRef.current = new g.Polyline({
         path: [path[0]],
         map,
         strokeColor: "#FF6B2C",
@@ -111,45 +143,17 @@ export function DeliveryMap({ progress }: Props) {
         position: RESTAURANT,
         map,
         label: { text: "A", color: "#fff", fontWeight: "700" },
-        icon: {
-          path: g.SymbolPath.CIRCLE,
-          scale: 12,
-          fillColor: "#1f2937",
-          fillOpacity: 1,
-          strokeColor: "#fff",
-          strokeWeight: 2,
-        },
       });
 
       new g.Marker({
         position: CUSTOMER,
         map,
         label: { text: "B", color: "#fff", fontWeight: "700" },
-        icon: {
-          path: g.SymbolPath.CIRCLE,
-          scale: 12,
-          fillColor: "#FF6B2C",
-          fillOpacity: 1,
-          strokeColor: "#fff",
-          strokeWeight: 2,
-        },
       });
 
-      riderRef.current = new g.Marker({
+      googleRiderRef.current = new g.Marker({
         position: path[0],
         map,
-        icon: {
-          url:
-            "data:image/svg+xml;charset=UTF-8," +
-            encodeURIComponent(
-              `<svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 44 44">
-                <circle cx="22" cy="22" r="18" fill="#FF6B2C" stroke="#fff" stroke-width="3"/>
-                <circle cx="22" cy="22" r="8" fill="#fff"/>
-              </svg>`
-            ),
-          scaledSize: new g.Size(44, 44),
-          anchor: new g.Point(22, 22),
-        },
         zIndex: 999,
       });
 
@@ -160,125 +164,143 @@ export function DeliveryMap({ progress }: Props) {
     } catch {
       setUseFallback(true);
     }
-  }, [ready, useFallback]);
+  }, [googleReady, useFallback]);
 
-  // Animate Google Map rider position
+  // 4. Initialize Leaflet Real Street Map
   useEffect(() => {
-    if (!ready || useFallback || !pathRef.current || !riderRef.current) return;
-    const path = pathRef.current;
-    const target = Math.max(0, Math.min(1, progress));
-    const targetIdx = Math.floor(target * (path.length - 1));
+    if (!useFallback || !leafletReady || !leafletContainerRef.current || leafletMapRef.current) return;
 
-    riderRef.current.setPosition(path[targetIdx]);
-    if (drivenRef.current) {
-      drivenRef.current.setPath(path.slice(0, targetIdx + 1));
+    const L = window.L;
+    if (!L) return;
+
+    const map = L.map(leafletContainerRef.current, {
+      center: [(RESTAURANT.lat + CUSTOMER.lat) / 2, (RESTAURANT.lng + CUSTOMER.lng) / 2],
+      zoom: 14,
+      zoomControl: false,
+      attributionControl: false,
+    });
+    leafletMapRef.current = map;
+
+    // Use CartoDB Voyager tiles (Real streets, clean dark/light food app style)
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
+      maxZoom: 19,
+      subdomains: "abcd",
+    }).addTo(map);
+
+    // Calculate route line steps
+    const steps = 24;
+    const path: [number, number][] = [];
+    for (let i = 0; i <= steps; i++) {
+      const t = i / steps;
+      const lat = RESTAURANT.lat + (CUSTOMER.lat - RESTAURANT.lat) * t;
+      const lng = RESTAURANT.lng + (CUSTOMER.lng - RESTAURANT.lng) * t;
+      const offset = Math.sin(t * Math.PI) * 0.003;
+      path.push([lat + offset, lng - offset]);
     }
-  }, [progress, ready, useFallback]);
+
+    // Planned Dashed Path
+    L.polyline(path, { color: "#94a3b8", weight: 4, opacity: 0.6, dashArray: "6, 8" }).addTo(map);
+
+    // Driven Path
+    leafletDrivenRef.current = L.polyline([path[0]], { color: "#FF6B2C", weight: 6 }).addTo(map);
+
+    // Custom Icon Maker
+    const createCustomIcon = (html: string) =>
+      L.divIcon({
+        html,
+        className: "custom-leaflet-marker",
+        iconSize: [36, 36],
+        iconAnchor: [18, 18],
+      });
+
+    // Restaurant A Marker
+    L.marker([RESTAURANT.lat, RESTAURANT.lng], {
+      icon: createCustomIcon(
+        `<div style="background:#0f172a; border:2px solid #38bdf8; color:#fff; font-weight:bold; width:32px; height:32px; border-radius:50%; display:grid; place-items:center; font-size:12px; shadow:0 4px 10px rgba(0,0,0,0.3)">A</div>`
+      ),
+    }).addTo(map).bindPopup("<b>Flame Grill Kitchen</b><br>Colombo 03");
+
+    // Customer B Marker
+    L.marker([CUSTOMER.lat, CUSTOMER.lng], {
+      icon: createCustomIcon(
+        `<div style="background:#FF6B2C; border:2px solid #fff; color:#fff; font-weight:bold; width:32px; height:32px; border-radius:50%; display:grid; place-items:center; font-size:12px; shadow:0 4px 10px rgba(0,0,0,0.3)">B</div>`
+      ),
+    }).addTo(map).bindPopup("<b>Your Location</b><br>Kollupitiya");
+
+    // Rider Moving Marker
+    leafletRiderRef.current = L.marker(path[0], {
+      icon: createCustomIcon(
+        `<div style="background:#FF6B2C; border:3px solid #ffffff; width:36px; height:36px; border-radius:50%; display:grid; place-items:center; color:#fff; shadow:0 4px 14px rgba(255,107,44,0.6)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17.5" r="2.5"/><circle cx="18.5" cy="17.5" r="2.5"/><path d="M15 6h2a2 2 0 0 1 2 2v7h-2.5"/><path d="M9 17.5H5.5a2.5 2.5 0 0 1-2.5-2.5V9a2 2 0 0 1 2-2h4l3 3h4.5"/></svg>
+        </div>`
+      ),
+    }).addTo(map);
+
+    map.fitBounds(L.latLngBounds(path), { padding: [40, 40] });
+  }, [useFallback, leafletReady]);
+
+  // 5. Animate Rider Location along Route
+  useEffect(() => {
+    const clampedProgress = Math.max(0, Math.min(1, progress));
+
+    if (!useFallback && googleMapRef.current && googlePathRef.current && googleRiderRef.current) {
+      const path = googlePathRef.current;
+      const idx = Math.floor(clampedProgress * (path.length - 1));
+      googleRiderRef.current.setPosition(path[idx]);
+      if (googleDrivenRef.current) {
+        googleDrivenRef.current.setPath(path.slice(0, idx + 1));
+      }
+    }
+
+    if (useFallback && leafletMapRef.current && leafletRiderRef.current) {
+      const steps = 24;
+      const path: [number, number][] = [];
+      for (let i = 0; i <= steps; i++) {
+        const t = i / steps;
+        const lat = RESTAURANT.lat + (CUSTOMER.lat - RESTAURANT.lat) * t;
+        const lng = RESTAURANT.lng + (CUSTOMER.lng - RESTAURANT.lng) * t;
+        const offset = Math.sin(t * Math.PI) * 0.003;
+        path.push([lat + offset, lng - offset]);
+      }
+
+      const idx = Math.floor(clampedProgress * (path.length - 1));
+      leafletRiderRef.current.setLatLng(path[idx]);
+      if (leafletDrivenRef.current) {
+        leafletDrivenRef.current.setLatLngs(path.slice(0, idx + 1));
+      }
+    }
+  }, [progress, useFallback]);
 
   const etaMinutes = Math.max(1, Math.round((1 - progress) * 22));
 
-  // Render Fallback Interactive Vector Radar Map if Google Maps fails
-  if (useFallback) {
-    const clampedProgress = Math.max(0.05, Math.min(0.95, progress));
-    // Calculate rider SVG position along curved path
-    const riderX = 20 + clampedProgress * 60;
-    const riderY = 70 - Math.sin(clampedProgress * Math.PI) * 35;
-
-    return (
-      <div className="relative h-64 overflow-hidden rounded-3xl border border-white/10 bg-slate-950 p-4 shadow-card text-white">
-        {/* Animated Radar Background Grid */}
-        <div className="absolute inset-0 bg-[radial-gradient(#334155_1px,transparent_1px)] [background-size:16px_16px] opacity-40" />
-
-        {/* Floating Top Status Badge */}
-        <div className="relative z-10 flex items-center justify-between">
-          <div className="inline-flex items-center gap-2 rounded-full bg-slate-900/80 px-3.5 py-1.5 text-xs font-bold backdrop-blur border border-slate-700/60 shadow-lg">
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-orange-400 opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-orange-500" />
-            </span>
-            ETA · {etaMinutes} mins
-          </div>
-
-          <span className="inline-flex items-center gap-1 rounded-full bg-orange-500/20 border border-orange-500/30 px-3 py-1 text-[11px] font-bold text-orange-400">
-            <Bike className="h-3.5 w-3.5 animate-bounce" /> Live GPS Active
-          </span>
-        </div>
-
-        {/* Vector SVG Live Route Map */}
-        <div className="relative h-44 w-full mt-2">
-          <svg className="h-full w-full overflow-visible" viewBox="0 0 100 100" preserveAspectRatio="none">
-            {/* Dashed Route Path */}
-            <path
-              d="M 20 70 Q 50 35 80 70"
-              fill="none"
-              stroke="#475569"
-              strokeWidth="2.5"
-              strokeDasharray="4 4"
-            />
-
-            {/* Completed Progress Trajectory Line */}
-            <path
-              d="M 20 70 Q 50 35 80 70"
-              fill="none"
-              stroke="#FF6B2C"
-              strokeWidth="3.5"
-              strokeDasharray="100"
-              strokeDashoffset={100 - clampedProgress * 100}
-              className="transition-all duration-500"
-            />
-
-            {/* Restaurant Marker (A) */}
-            <g transform="translate(20, 70)">
-              <circle r="6" fill="#1e293b" stroke="#38bdf8" strokeWidth="2" />
-              <text y="3" textAnchor="middle" fill="#fff" fontSize="5" fontWeight="bold">
-                A
-              </text>
-            </g>
-
-            {/* Customer Location Marker (B) */}
-            <g transform="translate(80, 70)">
-              <circle r="6" fill="#FF6B2C" stroke="#fff" strokeWidth="2" />
-              <text y="3" textAnchor="middle" fill="#fff" fontSize="5" fontWeight="bold">
-                B
-              </text>
-            </g>
-
-            {/* Live Moving Courier Bike Marker */}
-            <g transform={`translate(${riderX}, ${riderY})`} className="transition-all duration-300">
-              <circle r="7" fill="#FF6B2C" className="animate-ping opacity-75" />
-              <circle r="6" fill="#FF6B2C" stroke="#ffffff" strokeWidth="2" />
-              <circle r="2" fill="#ffffff" />
-            </g>
-          </svg>
-        </div>
-
-        {/* Map Bottom Labels */}
-        <div className="absolute inset-x-4 bottom-3 z-10 flex items-center justify-between text-[11px] font-bold text-slate-300">
-          <div className="flex items-center gap-1">
-            <span className="h-2 w-2 rounded-full bg-sky-400" />
-            <span className="truncate max-w-[120px]">Kitchen (A)</span>
-          </div>
-
-          <div className="flex items-center gap-1">
-            <span className="h-2 w-2 rounded-full bg-orange-500" />
-            <span className="truncate max-w-[120px]">Your Door (B)</span>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Google Maps Component View
   return (
     <div className="relative h-64 overflow-hidden rounded-3xl shadow-card border border-border">
-      <div ref={containerRef} className="h-full w-full" />
-      {!ready && (
-        <div className="absolute inset-0 grid place-items-center bg-surface-muted">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      {/* Google Maps Container */}
+      {!useFallback && <div ref={googleContainerRef} className="h-full w-full" />}
+
+      {/* Leaflet Real Street Map Container */}
+      {useFallback && (
+        <div className="relative h-full w-full">
+          <div ref={leafletContainerRef} className="h-full w-full z-0" />
+          {!leafletReady && (
+            <div className="absolute inset-0 grid place-items-center bg-surface-muted text-xs font-bold text-muted-foreground">
+              Loading Real Street Map...
+            </div>
+          )}
         </div>
       )}
-      <div className="pointer-events-none absolute left-3 top-3 rounded-full bg-surface/90 px-3.5 py-1.5 text-xs font-bold backdrop-blur shadow-soft border border-border/50">
-        ETA · {etaMinutes} min
+
+      {/* Top Floating ETA & Live Badge */}
+      <div className="pointer-events-none absolute left-3 top-3 z-10 flex items-center gap-2">
+        <div className="rounded-full bg-background/90 px-3.5 py-1.5 text-xs font-bold backdrop-blur shadow-soft border border-border/50 text-foreground">
+          ETA · {etaMinutes} min
+        </div>
+      </div>
+
+      <div className="pointer-events-none absolute right-3 top-3 z-10">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/90 text-primary-foreground px-3 py-1 text-[11px] font-bold backdrop-blur shadow-soft">
+          <Bike className="h-3.5 w-3.5 animate-bounce" /> Live GPS Tracking
+        </span>
       </div>
     </div>
   );
