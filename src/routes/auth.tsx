@@ -72,7 +72,12 @@ function AuthPage() {
         goAfterAuth(data.user.email ?? email);
       }
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Something went wrong");
+      const msg = err instanceof Error ? err.message : "Something went wrong";
+      if (msg.toLowerCase().includes("failed to fetch")) {
+        toast.error("Unable to connect to Supabase database. Please ensure your Supabase project is active (unpaused) in Supabase Dashboard.");
+      } else {
+        toast.error(msg);
+      }
     } finally {
       setLoading(false);
     }
