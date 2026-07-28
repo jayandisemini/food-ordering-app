@@ -1,10 +1,12 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { ArrowLeft, Receipt, Clock, CheckCircle, MapPin, ChevronRight, Map, RotateCcw, Star } from "lucide-react";
 import { BottomNav } from "@/components/bottom-nav";
 import { formatLkr } from "@/lib/food-data";
 import { cartStore } from "@/lib/cart-store";
 import { useI18n } from "@/lib/i18n";
+import { toast } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
 
 export const Route = createFileRoute("/orders")({
   head: () => ({ meta: [{ title: "Your orders — QuickBite" }] }),
@@ -56,10 +58,18 @@ const pastOrders = [
 
 function OrdersPage() {
   const { t } = useI18n();
+  const navigate = useNavigate();
   const [ratingHover, setRatingHover] = useState<Record<string, number>>({});
+
+  const handleReorder = (order: (typeof pastOrders)[number]) => {
+    cartStore.add(order.foodId);
+    toast.success(`Reordered ${order.items}! Added to cart.`);
+    navigate({ to: "/cart" });
+  };
 
   return (
     <div className="phone-frame flex min-h-dvh flex-col bg-background">
+      <Toaster />
       <header className="flex items-center justify-between px-5 pt-6 animate-fade-up">
         <Link to="/home" className="press grid h-11 w-11 place-items-center rounded-2xl bg-surface shadow-soft">
           <ArrowLeft className="h-5 w-5" />
@@ -142,7 +152,7 @@ function OrdersPage() {
                     <button
                       type="button"
                       className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground press"
-                      onClick={() => { /* future: open rating modal */ }}
+                      onClick={() => { toast.info(`Thank you for rating ${order.restaurant}!`); }}
                     >
                       <div className="flex gap-0.5">
                         {[1, 2, 3, 4, 5].map((star) => (
@@ -153,7 +163,6 @@ function OrdersPage() {
                                 ? "fill-primary text-primary"
                                 : "fill-transparent text-primary/40"
                             }`}
-
                             onMouseEnter={() =>
                               setRatingHover((prev) => ({ ...prev, [order.id]: star }))
                             }
@@ -172,13 +181,12 @@ function OrdersPage() {
                   {(order.status === "Delivered" || order.status === "Cancelled") && (
                     <button
                       type="button"
-                      onClick={() => cartStore.add(order.foodId)}
-                      className="press flex items-center gap-1 rounded-xl bg-foreground px-3 py-1.5 text-[10px] font-bold text-background shadow-soft"
+                      onClick={() => handleReorder(order)}
+                      className="press flex items-center gap-1 rounded-xl bg-primary px-3 py-1.5 text-[10px] font-bold text-primary-foreground shadow-glow hover:scale-105 transition-all"
                     >
                       <RotateCcw className="h-3 w-3" /> Reorder
                     </button>
                   )}
-
                 </div>
               </div>
             ))}
