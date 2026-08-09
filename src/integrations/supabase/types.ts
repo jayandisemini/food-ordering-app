@@ -65,8 +65,13 @@ export type Database = {
       orders: {
         Row: {
           address: string
+          courier_name: string | null
+          courier_phone: string | null
+          courier_vehicle: string | null
           created_at: string
           delivery_fee: number
+          driver_lat: number | null
+          driver_lng: number | null
           id: string
           instructions: string | null
           items: Json
@@ -75,12 +80,19 @@ export type Database = {
           status: string
           subtotal: number
           total: number
+          track_lat: number | null
+          track_lng: number | null
           user_id: string
         }
         Insert: {
           address: string
+          courier_name?: string | null
+          courier_phone?: string | null
+          courier_vehicle?: string | null
           created_at?: string
           delivery_fee?: number
+          driver_lat?: number | null
+          driver_lng?: number | null
           id?: string
           instructions?: string | null
           items: Json
@@ -89,12 +101,19 @@ export type Database = {
           status?: string
           subtotal: number
           total: number
+          track_lat?: number | null
+          track_lng?: number | null
           user_id: string
         }
         Update: {
           address?: string
+          courier_name?: string | null
+          courier_phone?: string | null
+          courier_vehicle?: string | null
           created_at?: string
           delivery_fee?: number
+          driver_lat?: number | null
+          driver_lng?: number | null
           id?: string
           instructions?: string | null
           items?: Json
@@ -103,6 +122,8 @@ export type Database = {
           status?: string
           subtotal?: number
           total?: number
+          track_lat?: number | null
+          track_lng?: number | null
           user_id?: string
         }
         Relationships: []
