@@ -13,9 +13,12 @@ declare global {
 const RESTAURANT = { lat: 6.9271, lng: 79.8612, label: "Flame Grill Kitchen" }; // Colombo 03
 const CUSTOMER = { lat: 6.9344, lng: 79.8428, label: "Your Doorstep" };
 
-type Props = { progress: number }; // 0..1 along the route
+type Props = { 
+  progress: number; // 0..1 along simulated route
+  driverCoords?: { lat: number; lng: number };
+}; 
 
-export function DeliveryMap({ progress }: Props) {
+export function DeliveryMap({ progress, driverCoords }: Props) {
   const googleContainerRef = useRef<HTMLDivElement>(null);
   const leafletContainerRef = useRef<HTMLDivElement>(null);
 
@@ -152,7 +155,7 @@ export function DeliveryMap({ progress }: Props) {
       });
 
       googleRiderRef.current = new g.Marker({
-        position: path[0],
+        position: driverCoords || path[0],
         map,
         zIndex: 999,
       });
@@ -227,8 +230,10 @@ export function DeliveryMap({ progress }: Props) {
       ),
     }).addTo(map).bindPopup("<b>Your Location</b><br>Kollupitiya");
 
+    const riderStart: [number, number] = driverCoords ? [driverCoords.lat, driverCoords.lng] : path[0];
+
     // Rider Moving Marker
-    leafletRiderRef.current = L.marker(path[0], {
+    leafletRiderRef.current = L.marker(riderStart, {
       icon: createCustomIcon(
         `<div style="background:#FF6B2C; border:3px solid #ffffff; width:36px; height:36px; border-radius:50%; display:grid; place-items:center; color:#fff; shadow:0 4px 14px rgba(255,107,44,0.6)">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17.5" r="2.5"/><circle cx="18.5" cy="17.5" r="2.5"/><path d="M15 6h2a2 2 0 0 1 2 2v7h-2.5"/><path d="M9 17.5H5.5a2.5 2.5 0 0 1-2.5-2.5V9a2 2 0 0 1 2-2h4l3 3h4.5"/></svg>
@@ -239,8 +244,18 @@ export function DeliveryMap({ progress }: Props) {
     map.fitBounds(L.latLngBounds(path), { padding: [40, 40] });
   }, [useFallback, leafletReady]);
 
-  // 5. Animate Rider Location along Route
+  // 5. Animate Rider Location along Route or Live Driver GPS Coordinates
   useEffect(() => {
+    if (driverCoords) {
+      if (!useFallback && googleRiderRef.current) {
+        googleRiderRef.current.setPosition(driverCoords);
+      }
+      if (useFallback && leafletRiderRef.current) {
+        leafletRiderRef.current.setLatLng([driverCoords.lat, driverCoords.lng]);
+      }
+      return;
+    }
+
     const clampedProgress = Math.max(0, Math.min(1, progress));
 
     if (!useFallback && googleMapRef.current && googlePathRef.current && googleRiderRef.current) {
@@ -269,7 +284,7 @@ export function DeliveryMap({ progress }: Props) {
         leafletDrivenRef.current.setLatLngs(path.slice(0, idx + 1));
       }
     }
-  }, [progress, useFallback]);
+  }, [progress, driverCoords, useFallback]);
 
   const etaMinutes = Math.max(1, Math.round((1 - progress) * 22));
 
