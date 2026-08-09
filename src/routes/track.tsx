@@ -18,21 +18,63 @@ const steps = [
 
 function TrackPage() {
   const [active, setActive] = useState(1);
+  const [courier, setCourier] = useState({
+    name: "Kasun Perera",
+    phone: "+94771234567",
+    vehicle: "Honda Click (WP BI-8291)",
+  });
+  const [driverCoords, setDriverCoords] = useState<{ lat: number; lng: number } | undefined>(undefined);
 
   useEffect(() => {
-    // Listen for live Supabase realtime order updates
+    // 1. Fetch latest active order & assigned courier details from Supabase
+    async function loadLatestOrder() {
+      const { data } = await supabase
+        .from("orders")
+        .select("id, status, courier_name, courier_phone, courier_vehicle, driver_lat, driver_lng")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (data) {
+        if (data.courier_name) {
+          setCourier({
+            name: data.courier_name || "Kasun Perera",
+            phone: data.courier_phone || "+94771234567",
+            vehicle: data.courier_vehicle || "Honda Click",
+          });
+        }
+        if (data.driver_lat && data.driver_lng) {
+          setDriverCoords({ lat: data.driver_lat, lng: data.driver_lng });
+        }
+      }
+    }
+
+    loadLatestOrder();
+
+    // 2. Listen for live Supabase realtime order & driver updates
     const channel = supabase
       .channel("live-order-tracker")
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "orders" }, (payload) => {
-        if (payload.new && payload.new.status) {
+        if (payload.new) {
+          const p = payload.new;
           const statusMap: Record<string, number> = {
             confirmed: 0,
             cooking: 1,
             picked_up: 2,
             delivered: 3,
           };
-          if (statusMap[payload.new.status] !== undefined) {
-            setActive(statusMap[payload.new.status]);
+          if (p.status && statusMap[p.status] !== undefined) {
+            setActive(statusMap[p.status]);
+          }
+          if (p.driver_lat && p.driver_lng) {
+            setDriverCoords({ lat: p.driver_lat, lng: p.driver_lng });
+          }
+          if (p.courier_name) {
+            setCourier({
+              name: p.courier_name,
+              phone: p.courier_phone || "+94771234567",
+              vehicle: p.courier_vehicle || "Honda Click",
+            });
           }
         }
       })
@@ -55,25 +97,34 @@ function TrackPage() {
         <div className="h-11 w-11" />
       </header>
 
-      {/* Live Google Map */}
+      {/* Live Google / Street Map */}
       <div className="mx-5 mt-4">
-        <DeliveryMap progress={(active + 1) / steps.length} />
+        <DeliveryMap progress={(active + 1) / steps.length} driverCoords={driverCoords} />
       </div>
-
 
       {/* Rider */}
       <div className="mx-5 mt-4 flex items-center gap-3 rounded-3xl bg-surface p-4 shadow-soft animate-fade-up">
         <div className="grid h-12 w-12 place-items-center rounded-2xl bg-accent text-xl">👨‍🍳</div>
         <div className="min-w-0 flex-1">
           <p className="text-xs font-medium text-muted-foreground">Your courier</p>
-          <p className="truncate font-bold">Kasun Perera · Honda Click</p>
+          <p className="truncate font-bold">
+            {courier.name} · {courier.vehicle}
+          </p>
         </div>
-        <button className="press grid h-10 w-10 place-items-center rounded-2xl bg-foreground text-background">
+        <a
+          href={`sms:${courier.phone}?body=Hi%20${encodeURIComponent(courier.name)},%20regarding%20my%20food%20order`}
+          title="Message Courier"
+          className="press grid h-10 w-10 place-items-center rounded-2xl bg-foreground text-background"
+        >
           <MessageCircle className="h-4 w-4" />
-        </button>
-        <button className="press grid h-10 w-10 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-glow">
+        </a>
+        <a
+          href={`tel:${courier.phone}`}
+          title="Call Courier"
+          className="press grid h-10 w-10 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-glow"
+        >
           <Phone className="h-4 w-4" />
-        </button>
+        </a>
       </div>
 
       {/* Timeline */}
