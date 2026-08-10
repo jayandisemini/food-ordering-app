@@ -376,7 +376,51 @@ function OrderList({
   orders: Order[];
   onStatusChange: (id: string, status: string) => Promise<void>;
 }) {
+  const [simulatingId, setSimulatingId] = useState<string | null>(null);
+
   if (orders.length === 0) return <Empty text="No orders found." />;
+
+  const simulateRiderGps = async (orderId: string) => {
+    setSimulatingId(orderId);
+    toast.info("Starting live GPS simulation...");
+
+    // Update status to picked_up
+    await supabase.from("orders").update({
+      status: "picked_up",
+      courier_name: "Kasun Perera",
+      courier_phone: "+94740489343",
+      courier_vehicle: "Honda Click (WP BI-8291)",
+    }).eq("id", orderId);
+
+    const startLat = 6.9271;
+    const startLng = 79.8612;
+    const endLat = 6.9344;
+    const endLng = 79.8428;
+
+    let step = 0;
+    const totalSteps = 6;
+
+    const interval = setInterval(async () => {
+      step++;
+      const t = step / totalSteps;
+      const lat = startLat + (endLat - startLat) * t;
+      const lng = startLng + (endLng - startLng) * t;
+
+      await supabase.from("orders").update({
+        driver_lat: lat,
+        driver_lng: lng,
+      }).eq("id", orderId);
+
+      if (step >= totalSteps) {
+        clearInterval(interval);
+        await supabase.from("orders").update({
+          status: "delivered",
+        }).eq("id", orderId);
+        setSimulatingId(null);
+        toast.success("Rider arrived! Order delivered.");
+      }
+    }, 2500);
+  };
 
   return (
     <div className="space-y-3">
@@ -405,17 +449,34 @@ function OrderList({
               </div>
             </div>
           </div>
-          <div className="mt-3 grid grid-cols-3 gap-2">
-            {["placed", "on_the_way", "delivered"].map((status) => (
+          
+          <div className="mt-3 grid grid-cols-4 gap-2">
+            {["confirmed", "cooking", "picked_up", "delivered"].map((status) => (
               <button
                 key={status}
                 type="button"
                 onClick={() => onStatusChange(order.id, status)}
-                className="press rounded-xl bg-background px-2 py-2 text-xs font-bold hover:bg-primary hover:text-primary-foreground"
+                className={`press rounded-xl px-2 py-2 text-[11px] font-bold capitalize transition-colors ${
+                  order.status === status
+                    ? "bg-primary text-primary-foreground shadow-glow"
+                    : "bg-background hover:bg-primary/20"
+                }`}
               >
-                {status === "on_the_way" ? "On way" : status}
+                {status.replace("_", " ")}
               </button>
             ))}
+          </div>
+
+          <div className="mt-2">
+            <button
+              type="button"
+              disabled={simulatingId === order.id}
+              onClick={() => simulateRiderGps(order.id)}
+              className="press flex w-full items-center justify-center gap-2 rounded-xl bg-accent/20 text-accent-foreground py-2 text-xs font-bold border border-accent/30 disabled:opacity-50"
+            >
+              <Truck className="h-3.5 w-3.5" />
+              {simulatingId === order.id ? "Simulating Live Rider Movement..." : "Simulate Rider Live GPS Delivery"}
+            </button>
           </div>
         </div>
       ))}
@@ -454,5 +515,5 @@ async function updateOrderStatus(id: string, status: string) {
     toast.error(error.message);
     return;
   }
-  toast.success("Order updated");
+  toast.success("Order status updated to " + status);
 }
