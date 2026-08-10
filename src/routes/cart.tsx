@@ -455,15 +455,25 @@ export default function CartPage() {
               </button>
             </div>
 
-            {/* Quick Voucher Chips */}
-            <div className="mb-4 flex gap-2">
-              <button
-                type="button"
-                onClick={() => applyPromoCode("WELCOME50")}
-                className="press flex items-center gap-1.5 rounded-xl border border-primary/30 bg-primary/10 px-3 py-1.5 text-xs font-bold text-primary"
-              >
-                <Sparkles className="h-3.5 w-3.5" /> WELCOME50 (50% OFF)
-              </button>
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+              <span className="text-xs font-bold text-muted-foreground">{t("promo.availableOffers")}</span>
+              <div className="flex flex-wrap gap-1.5">
+                {[
+                  { code: "WELCOME50", label: "WELCOME50 (50% OFF)" },
+                  { code: "QUICKBITE10", label: "QUICKBITE10 (10% OFF)" },
+                  { code: "FREEDELIVERY", label: "FREEDELIVERY (Free Delivery)" },
+                  { code: "FOODIEGO50", label: "FOODIEGO50 (50% OFF)" },
+                ].map((offer) => (
+                  <button
+                    key={offer.code}
+                    type="button"
+                    onClick={() => applyPromoCode(offer.code)}
+                    className="press flex items-center gap-1.5 rounded-xl border border-primary/30 bg-primary/10 px-2.5 py-1 text-[11px] font-bold text-primary hover:bg-primary/20"
+                  >
+                    <Sparkles className="h-3 w-3" /> {offer.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div className="flex items-center gap-2 rounded-2xl bg-surface-muted px-4 py-3 border border-border focus-within:border-primary">
