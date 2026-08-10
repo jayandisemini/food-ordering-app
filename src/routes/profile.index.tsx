@@ -105,27 +105,25 @@ function ProfilePage() {
         </button>
       </header>
 
-      <div className="mx-5 mt-4 flex items-center gap-4 rounded-3xl bg-foreground p-5 text-background shadow-card animate-fade-up">
-        <div className="grid h-16 w-16 place-items-center rounded-2xl bg-primary text-primary-foreground">
+      <div className="mx-5 mt-4 flex items-center gap-4 rounded-3xl bg-surface p-5 text-foreground shadow-card border border-border/60 animate-fade-up">
+        <div className="grid h-16 w-16 place-items-center rounded-2xl bg-primary text-primary-foreground font-display text-2xl font-black shadow-glow">
           {user ? (
-            <span className="font-display text-2xl font-black">
-              {(profile?.display_name ?? user.email ?? "G").charAt(0).toUpperCase()}
-            </span>
+            (profile?.display_name ?? user.email ?? "G").charAt(0).toUpperCase()
           ) : (
-            <User className="h-7 w-7" />
+            <User className="h-7 w-7 text-primary-foreground" />
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-xs uppercase tracking-wider text-background/60">
+          <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
             {user ? t("goldMember") : t("guest")}
           </p>
-          <h2 className="font-display text-xl font-black">{name}</h2>
-          <p className="truncate text-xs text-background/70">{email}</p>
+          <h2 className="font-display text-xl font-black text-foreground">{name}</h2>
+          <p className="truncate text-xs font-medium text-muted-foreground">{email}</p>
         </div>
         {!user && !loading && (
           <Link
             to="/auth"
-            className="press flex items-center gap-1 rounded-xl bg-primary px-3 py-2 text-xs font-bold text-primary-foreground"
+            className="press flex items-center gap-1 rounded-xl bg-primary px-3 py-2 text-xs font-bold text-primary-foreground shadow-glow"
           >
             <LogIn className="h-3.5 w-3.5" /> Register
           </Link>

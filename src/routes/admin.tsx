@@ -345,11 +345,11 @@ function Panel({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-[2rem] bg-surface p-4 shadow-soft">
+    <section className="rounded-[2rem] bg-surface p-5 shadow-soft border border-border/60">
       <div className="mb-4 flex items-center justify-between gap-3">
-        <h3 className="font-display text-xl font-black">{title}</h3>
+        <h3 className="font-display text-xl font-black text-foreground">{title}</h3>
         {action && (
-          <span className="rounded-full bg-background px-3 py-1 text-xs font-bold text-muted-foreground">
+          <span className="rounded-full bg-surface-muted px-3 py-1 text-xs font-bold text-muted-foreground border border-border/40">
             {action}
           </span>
         )}
