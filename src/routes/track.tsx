@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Phone, MessageCircle, Check, Copy, Send, X, ExternalLink, PhoneCall } from "lucide-react";
+import { ArrowLeft, Phone, MessageCircle, Check, Copy, Send, X, ExternalLink, PhoneCall, Star } from "lucide-react";
 import { DeliveryMap } from "@/components/delivery-map";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -32,6 +32,10 @@ function TrackPage() {
   // Modals state
   const [showCallModal, setShowCallModal] = useState(false);
   const [showChatModal, setShowChatModal] = useState(false);
+  const [showRatingModal, setShowRatingModal] = useState(false);
+  const [ratingStars, setRatingStars] = useState(5);
+  const [ratingComment, setRatingComment] = useState("");
+  const [ratingSubmitted, setRatingSubmitted] = useState(false);
   const [chatInput, setChatInput] = useState("");
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
     {
@@ -41,6 +45,13 @@ function TrackPage() {
       time: "Just now",
     },
   ]);
+
+  useEffect(() => {
+    if (active === 3 && !ratingSubmitted) {
+      const timer = setTimeout(() => setShowRatingModal(true), 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [active, ratingSubmitted]);
 
   useEffect(() => {
     // 1. Fetch latest active order & assigned courier details from Supabase
@@ -335,6 +346,66 @@ function TrackPage() {
               <Send className="h-5 w-5" />
             </button>
           </form>
+        </div>
+      )}
+
+      {/* --- POST-DELIVERY RATING MODAL --- */}
+      {showRatingModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fade-in">
+          <div className="w-full max-w-sm rounded-3xl bg-surface p-6 text-center shadow-card border border-border animate-scale-in">
+            <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-primary/15 text-3xl mb-3">
+              🎉
+            </div>
+            <h3 className="font-display text-xl font-black">Order Delivered!</h3>
+            <p className="text-xs text-muted-foreground mt-1">How was your meal and courier service with {courier.name}?</p>
+
+            {/* Star Rating Selector */}
+            <div className="my-5 flex justify-center gap-2">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  onClick={() => setRatingStars(star)}
+                  className="press transition-transform hover:scale-125"
+                >
+                  <Star
+                    className={`h-8 w-8 ${
+                      star <= ratingStars ? "fill-amber-400 text-amber-400 drop-shadow-md" : "text-border"
+                    }`}
+                  />
+                </button>
+              ))}
+            </div>
+
+            <textarea
+              value={ratingComment}
+              onChange={(e) => setRatingComment(e.target.value)}
+              placeholder="Leave a quick review for the kitchen & rider..."
+              className="w-full rounded-2xl border border-border bg-background p-3 text-xs outline-none focus:ring-2 focus:ring-primary/50"
+              rows={3}
+            />
+
+            <div className="mt-4 flex gap-2">
+              <button
+                type="button"
+                onClick={() => setShowRatingModal(false)}
+                className="press flex-1 rounded-2xl border border-border bg-background py-3 text-xs font-bold text-muted-foreground"
+              >
+                Skip
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setRatingSubmitted(true);
+                  setShowRatingModal(false);
+                  toast.success("Thank you for your rating & review!");
+                }}
+                className="press flex-1 rounded-2xl bg-primary py-3 text-xs font-bold text-primary-foreground shadow-glow"
+              >
+                Submit Review
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
