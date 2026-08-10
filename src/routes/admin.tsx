@@ -96,6 +96,7 @@ function AdminDashboard() {
       subtotal: 2450,
       total: 2450,
       payment_method: "Cash on Delivery",
+      address: "123 Galle Road, Colombo 03",
       instructions: "Extra crispy wedges please!",
       status: "confirmed",
       courier_name: "Kasun Perera",
