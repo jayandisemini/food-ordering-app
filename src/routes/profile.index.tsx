@@ -153,6 +153,12 @@ function ProfilePage() {
           title={t("account")}
           items={[
             {
+              icon: ShieldCheck,
+              label: "Admin Dashboard",
+              sub: "Order management & Rider Simulator",
+              onClick: () => navigate({ to: "/admin" }),
+            },
+            {
               icon: Receipt,
               label: t("orderHistory"),
               sub: t("accountPages.orderSubtitle"),
