@@ -15,6 +15,7 @@ import {
   LogIn,
   Globe,
   User,
+  Bike,
 } from "lucide-react";
 import { BottomNav } from "@/components/bottom-nav";
 import { useAuth } from "@/lib/use-auth";
@@ -216,6 +217,12 @@ function ProfilePage() {
               label: t("helpCenter"),
               sub: t("helpSub"),
               onClick: () => navigate({ to: "/profile/help" }),
+            },
+            {
+              icon: Bike,
+              label: "Courier Portal",
+              sub: "Delivery driver tasks & GPS",
+              onClick: () => navigate({ to: "/driver" }),
             },
             ...(user
               ? [
