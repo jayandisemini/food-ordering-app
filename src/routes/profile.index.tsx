@@ -16,6 +16,7 @@ import {
   Globe,
   User,
   Bike,
+  ShieldCheck,
 } from "lucide-react";
 import { BottomNav } from "@/components/bottom-nav";
 import { useAuth } from "@/lib/use-auth";
