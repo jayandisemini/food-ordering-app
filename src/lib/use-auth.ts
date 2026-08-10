@@ -8,6 +8,7 @@ export type Profile = {
   email: string | null;
   avatar_url: string | null;
   phone: string | null;
+  role?: string | null;
 };
 
 export function useAuth() {
