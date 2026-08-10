@@ -24,7 +24,7 @@ function TrackPage() {
   const [active, setActive] = useState(1);
   const [courier, setCourier] = useState({
     name: "Kasun Perera",
-    phone: "+94771234567",
+    phone: "+94740489343",
     vehicle: "Honda Click (WP BI-8291)",
   });
   const [driverCoords, setDriverCoords] = useState<{ lat: number; lng: number } | undefined>(undefined);
@@ -56,7 +56,7 @@ function TrackPage() {
         if (data.courier_name) {
           setCourier({
             name: data.courier_name || "Kasun Perera",
-            phone: data.courier_phone || "+94771234567",
+            phone: data.courier_phone || "+94740489343",
             vehicle: data.courier_vehicle || "Honda Click",
           });
         }
@@ -89,7 +89,7 @@ function TrackPage() {
           if (p.courier_name) {
             setCourier({
               name: p.courier_name,
-              phone: p.courier_phone || "+94771234567",
+              phone: p.courier_phone || "+94740489343",
               vehicle: p.courier_vehicle || "Honda Click",
             });
           }
