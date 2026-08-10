@@ -401,7 +401,7 @@ export default function CartPage() {
                 navigate({ to: "/auth" });
                 return;
               }
-              placeOrder();
+              navigate({ to: "/checkout" });
             }}
             disabled={placing}
             className="press flex w-full items-center justify-between rounded-2xl bg-primary px-6 py-4 text-primary-foreground shadow-glow disabled:opacity-80 active:scale-[0.98] transition-all"
