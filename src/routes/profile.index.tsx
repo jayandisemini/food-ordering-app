@@ -224,6 +224,12 @@ function ProfilePage() {
               sub: "Delivery driver tasks & GPS",
               onClick: () => navigate({ to: "/driver" }),
             },
+            {
+              icon: ShieldCheck,
+              label: "Admin Dashboard",
+              sub: "Manage orders, menu catalog & riders",
+              onClick: () => navigate({ to: "/admin" }),
+            },
             ...(user
               ? [
                   {
